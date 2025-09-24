@@ -1,0 +1,5 @@
+# Node
+node_modules/
+
+# Env files (commit an .env.example instead)
+.env
