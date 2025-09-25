@@ -1,35 +1,60 @@
+// ============================
+// 1. IMPORTS
+// ============================
 require('dotenv').config();
 const express = require('express');
-const app = express();
+const { sequelize } = require('./models'); // DB connection
 
-const PORT = process.env.PORT || 3000;
-const HOST = '0.0.0.0';
-
-app.use(express.json());
-
+// Routes
 const healthRoutes = require('./routes/health');
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/authRoutes');
 
+// ============================
+// 2. APP CONFIGURATION
+// ============================
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// JSON parser
+app.use(express.json());
+
+// EJS setup
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+
+// ============================
+// 3. ROUTES
+// ============================
+// Main routes
 app.use('/', indexRoutes);
 app.use('/', healthRoutes);
-// app.use('/auth', authRoutes);
-app.get('/auth/login', (_req, res) => res.status(200).send('Login page (server.js test)'));
 
-// db connection import
-const { sequelize } = require('./models');
+// Auth routes
+app.use('/auth', authRoutes);
 
-// Start server after DB check (non-fatal if DB is not ready; adjust as you like)
-(async () => {
+// ============================
+// 4. DATABASE CONNECTION
+// ============================
+const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ alter: true }); 
-    console.log('DB connection OK');
+    await sequelize.sync({ alter: true }); // adjust as needed
+    console.log('✅ DB connection OK');
   } catch (err) {
-    console.error('DB connection failed (will still start server):', err.message);
+    console.error('❌ DB connection failed (server will still start):', err.message);
   }
+};
 
-  app.listen(PORT, HOST, () => {
-    console.log(`Server listening on http://${HOST}:${PORT}`);
+// ============================
+// 5. SERVER START
+// ============================
+const startServer = async () => {
+  await connectDB();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
-})();
+};
+
+startServer();

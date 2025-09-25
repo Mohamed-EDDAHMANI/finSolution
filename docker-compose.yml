@@ -20,7 +20,6 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-      - /app/node_modules
     command: npm start
     restart: unless-stopped
     healthcheck:
@@ -42,10 +41,10 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:'+(process.env.PORT||3000)+'/healthz',()=>process.exit(0)).on('error',()=>process.exit(1))\""]
-      interval: 20s
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   adminer:
     image: adminer
