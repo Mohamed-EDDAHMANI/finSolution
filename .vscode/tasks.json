@@ -1,0 +1,40 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run app (docker-compose)",
+			"type": "shell",
+			"command": "docker compose up --build",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Attach logs (docker-compose)",
+			"type": "shell",
+			"command": "docker compose logs -f app",
+			"args": [],
+			"isBackground": true,
+			"group": "build"
+		},
+		{
+			"label": "Compose up (rebuild, detached)",
+			"type": "shell",
+			"command": "docker compose up -d --build",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Logs - app",
+			"type": "shell",
+			"command": "docker compose logs -f app",
+			"args": [],
+			"isBackground": true,
+			"group": "build"
+		}
+	]
+}

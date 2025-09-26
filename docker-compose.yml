@@ -13,20 +13,14 @@ services:
       - PORT=${PORT:-3000}
       - DB_HOST=db
       - DB_PORT=3306
-      # If you use a watcher like nodemon on Windows:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     volumes:
-      - .:/app
-    command: npm start
+      - .:/app                 # mount المشروع كامل
+      - /app/node_modules      # node_modules داخل container فقط
+    command: npm run dev        # يشغل nodemon بدل npm start
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:'+(process.env.PORT||3000),()=>process.exit(0)).on('error',()=>process.exit(1))\""]
-      interval: 20s
-      timeout: 5s
-      retries: 5
 
   db:
     image: mysql:8.0
@@ -40,11 +34,6 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
   adminer:
     image: adminer

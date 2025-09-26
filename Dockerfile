@@ -1,20 +1,27 @@
-FROM node:20-alpine
+# Base image
+FROM node:20
 
+# Set working directory
 WORKDIR /app
 
-# Install deps with reproducible installs
-ENV NODE_ENV=production
+# Copy package.json and package-lock.json first for caching
 COPY package*.json ./
-RUN npm ci --omit=dev
 
-# Copy source
+# Install dependencies (production only if needed)
+RUN npm install
+
+# Copy all source code
 COPY . .
 
-# App port
+# Create uploads directory and give permissions to 'node' user
+RUN mkdir -p /app/uploads && chown -R node:node /app/uploads
+
+# Expose app port
 ENV PORT=3000
 EXPOSE 3000
 
-# Run as non-root
+# Use non-root user (built-in node user)
 USER node
 
+# Run the app
 CMD ["node", "server.js"]

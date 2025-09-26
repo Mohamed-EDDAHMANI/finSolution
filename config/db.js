@@ -1,4 +1,4 @@
-require('dotenv').config();
+// require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
 const {
@@ -14,7 +14,8 @@ const sequelize = new Sequelize(MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, {
   port: Number(DB_PORT),
   dialect: 'mysql',
   logging: false,
-  pool: { max: 10, min: 0, acquire: 30000, idle: 10000 }
+  pool: { max: 10, min: 0, acquire: 10000, idle: 10000 },
+  dialectOptions: { connectTimeout: 5000 }
 });
 
 module.exports = { sequelize };
