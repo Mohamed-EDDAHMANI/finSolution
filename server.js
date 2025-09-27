@@ -8,6 +8,7 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const authMiddleware = require("./middleware/authMiddleware");
+const path = require('path');
 
 // Routes
 const indexRoutes = require('./routes/index');
@@ -48,9 +49,12 @@ app.use((req, res, next) => {
 // 2. APP CONFIGURATION
 // ============================ 
 
+// static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 // JSON parser
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Lightweight request logger to help debug hanging requests
 app.use((req, res, next) => {

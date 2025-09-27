@@ -17,9 +17,9 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/app                 # mount المشروع كامل
-      - /app/node_modules      # node_modules داخل container فقط
-    command: npm run dev        # يشغل nodemon بدل npm start
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
     restart: unless-stopped
 
   db:

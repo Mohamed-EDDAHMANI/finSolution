@@ -9,41 +9,65 @@
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-  <% if (success_msg && success_msg.length> 0) { %>
-    <div class="alert alert-success">
-      <%= success_msg %>
+  <div class="w-full max-w-md">
+
+    <!-- Login box -->
+    <div class="bg-white shadow-lg rounded-2xl p-8">
+      <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
+
+      <form action="/auth/login" method="POST" class="space-y-5">
+        <div>
+          <input type="email" name="email" placeholder="Email" required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <input type="password" name="password" placeholder="Password" required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Forgot Password Link -->
+        <div class="text-right">
+          <a href="/auth/forgot-password"
+            class="text-sm text-blue-600 hover:underline hover:text-blue-800 transition duration-200">
+            Forgot Password?
+          </a>
+        </div>
+
+        <button type="submit"
+          class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+          Login
+        </button>
+      </form>
+
+      <p class="text-center text-gray-600 text-sm mt-6">
+        Don’t have an account?
+        <a href="/auth/register" class="text-blue-600 hover:underline">Register</a>
+      </p>
     </div>
+  </div>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const flashMessages = [];
+
+    <% if (success_msg && success_msg.length > 0) { %>
+      flashMessages.push({ type: 'success', text: "<%= success_msg %>" });
     <% } %>
 
-      <% if (error_msg && error_msg.length> 0) { %>
-        <div class="alert alert-danger">
-          <%= error_msg %>
-        </div>
-        <% } %>
+    <% if (error_msg && error_msg.length > 0) { %>
+      <% error_msg.forEach(err => { %>
+        flashMessages.push({ type: 'error', text: "<%= typeof err === 'string' ? err : err.message %>" });
+      <% }) %>
+    <% } %>
 
-          <div class="bg-white shadow-lg rounded-2xl w-full max-w-md p-8">
-            <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
+    if(flashMessages.length > 0){
+        showFlashMessages(flashMessages); // call function from flashMessages.js
+    }
+  });
+</script>
 
-            <form action="/auth/login" method="POST" class="space-y-5">
-              <div>
-                <input type="email" name="email" placeholder="Email" required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <input type="password" name="password" placeholder="Password" required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <button type="submit"
-                class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-200">
-                Login
-              </button>
-            </form>
+<!-- Import the JS file -->
+<script src="/js/flashMessages.js"></script>
 
-            <p class="text-center text-gray-600 text-sm mt-6">
-              Don’t have an account?
-              <a href="/auth/register" class="text-blue-600 hover:underline">Register</a>
-            </p>
-          </div>
 </body>
-
 </html>

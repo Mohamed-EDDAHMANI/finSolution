@@ -5,234 +5,101 @@
   <meta charset="UTF-8">
   <title>Register</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          animation: {
-            'float': 'float 6s ease-in-out infinite',
-            'gradient': 'gradient 15s ease infinite',
-          },
-          keyframes: {
-            float: {
-              '0%, 100%': { transform: 'translateY(0px)' },
-              '50%': { transform: 'translateY(-20px)' },
-            },
-            gradient: {
-              '0%, 100%': { backgroundPosition: '0% 50%' },
-              '50%': { backgroundPosition: '100% 50%' },
-            }
-          }
-        }
-      }
-    }
-  </script>
 </head>
 
-<body
-  class="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 bg-[length:400%_400%] animate-gradient flex items-center justify-center p-4">
-  <!-- Background decoration -->
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"></div>
-    <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"
-      style="animation-delay: -3s;"></div>
-    <div
-      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-white/5 rounded-full blur-3xl animate-float"
-      style="animation-delay: -1.5s;"></div>
-  </div>
-  
-  <% if (success_msg && success_msg.length> 0) { %>
-    <div class="alert alert-success">
-      <%= success_msg %>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="w-full max-w-2xl p-6">
+
+    <!-- Main Container -->
+    <div class="bg-white shadow-lg rounded-2xl w-full p-8">
+
+      <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Créer un compte</h1>
+
+      <form action="/auth/register" method="POST" enctype="multipart/form-data"
+        class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Name -->
+        <div>
+          <input type="text" name="displayName" placeholder="Nom complet" required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        </div>
+
+        <!-- Email -->
+        <div>
+          <input type="email" name="email" placeholder="Email" required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        </div>
+
+        <!-- Password -->
+        <div>
+          <input type="password" name="password" placeholder="Mot de passe" required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        </div>
+
+        <!-- Currency -->
+        <div>
+          <select name="currency" required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm cursor-pointer">
+            <option value="MAD">🇲🇦 MAD</option>
+            <option value="USD">🇺🇸 USD</option>
+            <option value="EUR">🇪🇺 EUR</option>
+            <option value="GBP">🇬🇧 GBP</option>
+            <option value="JPY">🇯🇵 JPY</option>
+          </select>
+        </div>
+
+        <!-- Picture -->
+        <div class="md:col-span-2">
+          <input type="file" name="picture" accept="image/*"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        </div>
+
+        <!-- Submit Button -->
+        <div class="md:col-span-2">
+          <button type="submit"
+            class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+            Créer mon compte
+          </button>
+        </div>
+
+      </form>
+
+      <!-- Login Link -->
+      <p class="text-center text-gray-600 text-sm mt-6">
+        Vous avez déjà un compte ?
+        <a href="/auth/login" class="text-blue-600 hover:underline">Se connecter</a>
+      </p>
+
     </div>
+  </div>
+
+  <!-- Flash Messages Script -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const flashMessages = [];
+
+    <% if (success_msg && success_msg.length > 0) { %>
+        flashMessages.push({ type: 'success', text: "<%= success_msg %>" });
     <% } %>
 
-      <% if (error_msg && error_msg.length> 0) { %>
-        <div class="alert alert-danger">
-          <%= error_msg %>
-        </div>
-        <% } %>
+    <% if (error_msg && error_msg.length > 0) { %>
+      <% error_msg.forEach(err => { %>
+          flashMessages.push({ type: 'error', text: "<%= typeof err === 'string' ? err : err.message %>" });
+      <% }) %>
+    <% } %>
+
+    if (flashMessages.length > 0) {
+        showFlashMessages(flashMessages); // call function from flashMessages.js
+      }
+    });
+  </script>
+
+  <!-- import the js file -->
+  <script src="/js/flashMessages.js"></script>
 
 
-      <!-- Main container -->
-      <div
-        class="relative bg-white/95 backdrop-blur-xl shadow-2xl rounded-3xl w-full max-w-lg p-6 border border-white/20">
-        <!-- Header -->
-        <div class="text-center mb-6">
-          <div
-            class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl mb-3 shadow-lg">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-            </svg>
-          </div>
-          <h1 class="text-2xl font-bold text-gray-800 mb-1">Créer un compte</h1>
-          <p class="text-gray-600 text-sm">Rejoignez-nous en quelques clics</p>
-        </div>
 
-        <form action="/auth/register" method="POST" enctype="multipart/form-data" class="space-y-4">
-          <!-- Name -->
-          <div class="group">
-            <label
-              class="block text-gray-700 font-medium mb-1 text-sm group-focus-within:text-purple-600 transition-colors">
-              <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
-              Nom complet
-            </label>
-            <input type="text" name="displayName" placeholder="Votre nom complet" required
-              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white text-sm" />
-          </div>
-
-          <!-- Email -->
-          <div class="group">
-            <label
-              class="block text-gray-700 font-medium mb-1 text-sm group-focus-within:text-purple-600 transition-colors">
-              <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                </path>
-              </svg>
-              Adresse email
-            </label>
-            <input type="email" name="email" placeholder="votre@email.com" required
-              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white text-sm" />
-          </div>
-
-          <!-- Password -->
-          <div class="group">
-            <label
-              class="block text-gray-700 font-medium mb-1 text-sm group-focus-within:text-purple-600 transition-colors">
-              <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                </path>
-              </svg>
-              Mot de passe
-            </label>
-            <input type="password" name="password" placeholder="••••••••" required
-              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white text-sm" />
-          </div>
-
-          <!-- Currency -->
-          <div class="group">
-            <label
-              class="block text-gray-700 font-medium mb-1 text-sm group-focus-within:text-purple-600 transition-colors">
-              <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
-                </path>
-              </svg>
-              Devise préférée
-            </label>
-            <select name="currency" required
-              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white appearance-none cursor-pointer text-sm"
-              style="background-image: url('data:image/svg+xml;base64,PHN2ZyBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNMTkgOWwtNyA3LTctNyI+PC9wYXRoPjwvc3ZnPg=='); background-repeat: no-repeat; background-position: right 8px center; background-size: 12px;">
-              <option value="MAD">🇲🇦 MAD</option>
-              <option value="USD">🇺🇸 USD</option>
-              <option value="EUR">🇪🇺 EUR</option>
-              <option value="GBP">🇬🇧 GBP</option>
-              <option value="JPY">🇯🇵 JPY</option>
-              <option value="AUD">🇦🇺 AUD</option>
-              <option value="CAD">🇨🇦 CAD</option>
-              <option value="CHF">🇨🇭 CHF</option>
-              <option value="CNY">🇨🇳 CNY</option>
-              <option value="SEK">🇸🇪 SEK</option>
-            </select>
-          </div>
-
-          <!-- Picture -->
-          <div class="group">
-            <label
-              class="block text-gray-700 font-medium mb-1 text-sm group-focus-within:text-purple-600 transition-colors">
-              <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                </path>
-              </svg>
-              Photo de profil
-            </label>
-            <input type="file" name="picture" accept="image/*"
-              class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 bg-gray-50/50 hover:bg-white file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white file:cursor-pointer hover:file:from-purple-600 hover:file:to-pink-600 file:transition-all file:duration-200 text-sm" />
-          </div>
-
-          <!-- Register Button -->
-          <button type="submit"
-            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-2.5 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-500/30">
-            <span class="flex items-center justify-center">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-              </svg>
-              Créer mon compte
-            </span>
-          </button>
-        </form>
-
-        <!-- Divider -->
-        <div class="flex items-center my-5">
-          <div class="flex-grow h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-          <span class="px-3 text-gray-500 text-xs font-medium bg-white rounded-full">OU</span>
-          <div class="flex-grow h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-        </div>
-
-        <!-- Google Signup -->
-        <a href="/auth/google"
-          class="flex items-center justify-center gap-2 w-full border-2 border-gray-200 py-2.5 px-4 rounded-lg hover:bg-gray-50 hover:border-gray-300 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm hover:shadow-md group">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-4 h-4">
-          <span class="text-gray-700 font-medium group-hover:text-gray-800 text-sm">Continuer avec Google</span>
-        </a>
-
-        <!-- Login link -->
-        <div class="text-center mt-5 p-3 bg-gray-50/50 rounded-xl">
-          <p class="text-gray-600 text-xs">
-            Vous avez déjà un compte ?
-            <a href="/auth/login"
-              class="text-purple-600 hover:text-purple-700 font-medium hover:underline transition-colors">
-              Se connecter
-            </a>
-          </p>
-        </div>
-      </div>
-
-      <script>
-        // Animation au focus des inputs
-        document.querySelectorAll('input, select').forEach(input => {
-          input.addEventListener('focus', function () {
-            this.parentElement.classList.add('scale-105');
-          });
-
-          input.addEventListener('blur', function () {
-            this.parentElement.classList.remove('scale-105');
-          });
-        });
-
-        // Animation du bouton submit
-        document.querySelector('button[type="submit"]').addEventListener('click', function (e) {
-          const button = this;
-          button.innerHTML = `
-        <span class="flex items-center justify-center">
-          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Création en cours...
-        </span>
-      `;
-
-          setTimeout(() => {
-            button.innerHTML = `
-          <span class="flex items-center justify-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-            </svg>
-            Créer mon compte
-          </span>
-        `;
-          }, 2000);
-        });
-      </script>
 </body>
 
 </html>
