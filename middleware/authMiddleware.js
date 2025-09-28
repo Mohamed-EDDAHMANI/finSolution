@@ -1,14 +1,22 @@
-// middlewares/authMiddleware.js
-exports.isAuth = (req, res, next) => {
-  const publicPaths = ['/', '/auth/login', '/auth/register']; // public routes
-  if (publicPaths.includes(req.path)) {
-    console.log("Public path, skipping auth check");
-    return next(); // skip auth check
+const jwt = require('jsonwebtoken');
+
+function authMiddleware(req, res, next) {
+  const token = req.cookies.accessToken;
+
+  if (!token) {
+    req.flash("error", "Please login first");
+    return res.redirect("/auth/login");
   }
 
-  if (!req.session.userId) {
-    return res.redirect('/auth/login'); // not logged in
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // نقدر نستعملو فـ controller
+    next();
+  } catch (err) {
+    console.error("JWT error:", err.message);
+    req.flash("error", "Session expired, please login again");
+    return res.redirect("/auth/login");
   }
+}
 
-  return next(); // logged in, continue
-};
+module.exports = { authMiddleware };

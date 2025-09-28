@@ -9,10 +9,12 @@ const flash = require("connect-flash");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const authMiddleware = require("./middleware/authMiddleware");
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 // Routes
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 
 // ============================
@@ -55,6 +57,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // JSON parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+
+
 
 // Lightweight request logger to help debug hanging requests
 app.use((req, res, next) => {
@@ -81,6 +87,8 @@ app.use('/', indexRoutes);
 
 // Auth routes
 app.use('/auth', authRoutes);
+
+app.use('/dashboard', userRoutes);
 
 // Static uploads (optional if you want to serve uploaded pictures)
 app.use('/uploads', express.static(__dirname + '/uploads'));
