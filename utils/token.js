@@ -13,4 +13,15 @@ function createAccessToken(user) {
   });
 }
 
-module.exports = { createAccessToken };
+function createRefreshToken(user) {
+  const payload = {
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    picture: user.picture
+  };
+  return jwt.sign(payload, process.env.REFRESH_SECRET, { expiresIn: process.env.REFRESH_EXPIRES || '7d' }); // long-lived
+}
+
+
+module.exports = { createAccessToken, createRefreshToken };

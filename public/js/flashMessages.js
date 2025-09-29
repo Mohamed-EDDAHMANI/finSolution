@@ -1,4 +1,3 @@
-// public/js/flashMessages.js
 function showFlashMessages(flashMessages) {
     console.log("Flash messages to show:", flashMessages);
     const flashContainer = document.createElement('div');
@@ -6,9 +5,19 @@ function showFlashMessages(flashMessages) {
     document.body.appendChild(flashContainer);
 
     let index = 0;
+    let stop = false; // flag bach n9dro nstop affichage
+
+    // listener global: click anywhere stops messages
+    function stopMessages() {
+        stop = true;
+        flashContainer.remove(); // remove container w tous les messages
+        flashMessages.length = 0; // khawi variable dyal les erreurs
+        document.removeEventListener('click', stopMessages); // cleanup
+    }
+    document.addEventListener('click', stopMessages);
 
     function showNextMessage() {
-        if (index >= flashMessages.length) return;
+        if (index >= flashMessages.length || stop) return;
 
         const msgData = flashMessages[index];
         const msgDiv = document.createElement('div');
@@ -20,21 +29,21 @@ function showFlashMessages(flashMessages) {
         msgDiv.style.opacity = 0;
         flashContainer.appendChild(msgDiv);
 
-        // fade in
         setTimeout(() => msgDiv.style.opacity = 1, 10);
 
-        // visible 4 sec
         setTimeout(() => {
-            msgDiv.style.opacity = 0;
-            setTimeout(() => {
-                msgDiv.remove();
-                index++;
-                showNextMessage(); // next message
-            }, 500);
+            if (!stop) {
+                msgDiv.style.opacity = 0;
+                setTimeout(() => {
+                    if (!stop) {
+                        msgDiv.remove();
+                        index++;
+                        showNextMessage();
+                    }
+                }, 500);
+            }
         }, 4000);
     }
 
-    showNextMessage(); // start
+    showNextMessage();
 }
-
-// module.exports = { showFlashMessages };

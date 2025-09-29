@@ -49,19 +49,22 @@
 <script>
   window.addEventListener('DOMContentLoaded', () => {
     const flashMessages = [];
-
+    
     <% if (success_msg && success_msg.length > 0) { %>
       flashMessages.push({ type: 'success', text: "<%= success_msg %>" });
     <% } %>
-
+    
     <% if (error_msg && error_msg.length > 0) { %>
       <% error_msg.forEach(err => { %>
-        flashMessages.push({ type: 'error', text: "<%= typeof err === 'string' ? err : err.message %>" });
+        flashMessages.push({
+          type: 'error', 
+          text: "<%= (typeof err === 'string') ? err : err.message %>" 
+        });
       <% }) %>
     <% } %>
-
+    console.log(flashMessages);
     if(flashMessages.length > 0){
-        showFlashMessages(flashMessages); // call function from flashMessages.js
+        showFlashMessages(flashMessages);
     }
   });
 </script>

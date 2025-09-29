@@ -1,160 +1,189 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Dashboard Utilisateur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
 
-<!-- Navbar -->
-<nav class="bg-white shadow-lg p-4 flex justify-between items-center">
-    <div class="text-xl font-bold">FinSolution Finance</div>
-    <div class="flex items-center gap-4">
-        <span>Bienvenue, Mohamed</span>
-        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Déconnexion</button>
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg p-4 flex justify-between items-center">
+        <div class="text-xl font-bold">FinSolution Finance</div>
+        <div class="flex items-center gap-4">
+<% if (displayName) { %>
+  <span>Bienvenue, <%= displayName %>!</span>
+<% } else { %>
+  <p>Bienvenue, Guest!</p>
+<% } %>
+            <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Déconnexion</button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-6 p-4">
+
+        <!-- Solde actuel -->
+        <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <h2 class="text-gray-500 text-sm">Solde Actuel</h2>
+            <p class="text-3xl font-bold text-green-500">3,500 MAD</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+
+            <!-- Formulaire nouvelle transaction -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">Ajouter une Transaction</h3>
+                <form id="transactionForm" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700">Type</label>
+                        <select class="w-full border rounded px-3 py-2" name="type">
+                            <option value="revenu">Revenu</option>
+                            <option value="depense">Dépense</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Catégorie</label>
+                        <input type="text" class="w-full border rounded px-3 py-2" name="categorie"
+                            placeholder="Ex: Alimentation">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Montant</label>
+                        <input type="number" class="w-full border rounded px-3 py-2" name="montant"
+                            placeholder="Ex: 150">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Date</label>
+                        <input type="date" class="w-full border rounded px-3 py-2" name="date">
+                    </div>
+                    <button type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">Ajouter</button>
+                </form>
+            </div>
+
+            <!-- Tableau transactions récentes -->
+            <div class="bg-white shadow rounded-lg p-6 col-span-2">
+                <h3 class="text-lg font-semibold mb-4">Transactions Récentes</h3>
+                <table class="w-full text-left table-auto mb-4">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="px-4 py-2">Date</th>
+                            <th class="px-4 py-2">Catégorie</th>
+                            <th class="px-4 py-2">Montant</th>
+                            <th class="px-4 py-2">Type</th>
+                            <th class="px-4 py-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTable">
+                        <tr class="border-b">
+                            <td class="px-4 py-2">28/09/2025</td>
+                            <td class="px-4 py-2">Alimentation</td>
+                            <td class="px-4 py-2 text-red-500">-150 MAD</td>
+                            <td class="px-4 py-2">Dépense</td>
+                            <td class="px-4 py-2">
+                                <button class="text-blue-500 hover:underline">Éditer</button>
+                                <button class="text-red-500 hover:underline ml-2">Supprimer</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Exporter CSV</button>
+            </div>
+        </div>
+
+        <!-- Budgets et Objectifs -->
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">Budgets par Catégorie</h3>
+                <ul class="list-disc pl-5 space-y-2 mb-4" id="budgetList">
+                    <li>Alimentation : 1000 MAD / 1500 MAD</li>
+                    <li>Transport : 500 MAD / 800 MAD</li>
+                    <li>Loisirs : 300 MAD / 500 MAD</li>
+                </ul>
+
+                <!-- Nouveau formulaire ajout de catégorie -->
+                <form id="categoryForm" class="space-y-3 bg-gray-50 p-4 rounded-lg">
+                    <div>
+                        <label class="block text-gray-700">Nom de la Catégorie</label>
+                        <input type="text" name="name" placeholder="Ex: Santé"
+                            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Limite (MAD)</label>
+                        <input type="number" name="limite" placeholder="Ex: 2000"
+                            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <button type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600 transition">
+                        Ajouter Catégorie
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">Objectifs d'Épargne</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Vacances : 5000 MAD / 2000 MAD épargnés</li>
+                    <li>Achat ordinateur : 7000 MAD / 1500 MAD épargnés</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">Répartition des Dépenses</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">Évolution Revenus/Dépenses</h3>
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+
     </div>
-</nav>
 
-<div class="container mx-auto mt-6 p-4">
+    <script>
+        const flashMessages = [];
+        // Données fictives pour Pie Chart
+        const pieData = {
+            labels: ['Alimentation', 'Transport', 'Loisirs', 'Autres'],
+            datasets: [{
+                data: [150, 200, 100, 50],
+                backgroundColor: ['#f87171', '#60a5fa', '#34d399', '#fbbf24'],
+            }]
+        };
+        new Chart(document.getElementById('pieChart'), { type: 'pie', data: pieData });
 
-    <!-- Solde actuel -->
-    <div class="bg-white shadow rounded-lg p-6 mb-6">
-        <h2 class="text-gray-500 text-sm">Solde Actuel</h2>
-        <p class="text-3xl font-bold text-green-500">3,500 MAD</p>
-    </div>
+        // Données fictives pour Line Chart
+        const lineData = {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'],
+            datasets: [{
+                label: 'Dépenses',
+                data: [1200, 900, 1400, 1100, 1300, 1000, 900],
+                borderColor: '#f87171',
+                fill: false,
+            }, {
+                label: 'Revenus',
+                data: [3000, 3500, 3200, 4000, 3700, 3800, 3900],
+                borderColor: '#34d399',
+                fill: false,
+            }]
+        };
+        new Chart(document.getElementById('lineChart'), { type: 'line', data: lineData });
 
-    <div class="grid md:grid-cols-3 gap-6">
+        // Gestion du formulaire transaction
+        const form = document.getElementById('transactionForm');
+        const table = document.getElementById('transactionsTable');
 
-        <!-- Formulaire nouvelle transaction -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-lg font-semibold mb-4">Ajouter une Transaction</h3>
-            <form id="transactionForm" class="space-y-4">
-                <div>
-                    <label class="block text-gray-700">Type</label>
-                    <select class="w-full border rounded px-3 py-2" name="type">
-                        <option value="revenu">Revenu</option>
-                        <option value="depense">Dépense</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-gray-700">Catégorie</label>
-                    <input type="text" class="w-full border rounded px-3 py-2" name="categorie" placeholder="Ex: Alimentation">
-                </div>
-                <div>
-                    <label class="block text-gray-700">Montant</label>
-                    <input type="number" class="w-full border rounded px-3 py-2" name="montant" placeholder="Ex: 150">
-                </div>
-                <div>
-                    <label class="block text-gray-700">Date</label>
-                    <input type="date" class="w-full border rounded px-3 py-2" name="date">
-                </div>
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">Ajouter</button>
-            </form>
-        </div>
-
-        <!-- Tableau transactions récentes -->
-        <div class="bg-white shadow rounded-lg p-6 col-span-2">
-            <h3 class="text-lg font-semibold mb-4">Transactions Récentes</h3>
-            <table class="w-full text-left table-auto mb-4">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="px-4 py-2">Date</th>
-                        <th class="px-4 py-2">Catégorie</th>
-                        <th class="px-4 py-2">Montant</th>
-                        <th class="px-4 py-2">Type</th>
-                        <th class="px-4 py-2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="transactionsTable">
-                    <tr class="border-b">
-                        <td class="px-4 py-2">28/09/2025</td>
-                        <td class="px-4 py-2">Alimentation</td>
-                        <td class="px-4 py-2 text-red-500">-150 MAD</td>
-                        <td class="px-4 py-2">Dépense</td>
-                        <td class="px-4 py-2">
-                            <button class="text-blue-500 hover:underline">Éditer</button>
-                            <button class="text-red-500 hover:underline ml-2">Supprimer</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Exporter CSV</button>
-        </div>
-    </div>
-
-    <!-- Budgets et Objectifs -->
-    <div class="grid md:grid-cols-2 gap-6 mt-6">
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-lg font-semibold mb-4">Budgets par Catégorie</h3>
-            <ul class="list-disc pl-5 space-y-2">
-                <li>Alimentation : 1000 MAD / 1500 MAD</li>
-                <li>Transport : 500 MAD / 800 MAD</li>
-                <li>Loisirs : 300 MAD / 500 MAD</li>
-            </ul>
-        </div>
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-lg font-semibold mb-4">Objectifs d'Épargne</h3>
-            <ul class="list-disc pl-5 space-y-2">
-                <li>Vacances : 5000 MAD / 2000 MAD épargnés</li>
-                <li>Achat ordinateur : 7000 MAD / 1500 MAD épargnés</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Graphiques -->
-    <div class="grid md:grid-cols-2 gap-6 mt-6">
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-lg font-semibold mb-4">Répartition des Dépenses</h3>
-            <canvas id="pieChart"></canvas>
-        </div>
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-lg font-semibold mb-4">Évolution Revenus/Dépenses</h3>
-            <canvas id="lineChart"></canvas>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    // Données fictives pour Pie Chart
-    const pieData = {
-        labels: ['Alimentation', 'Transport', 'Loisirs', 'Autres'],
-        datasets: [{
-            data: [150, 200, 100, 50],
-            backgroundColor: ['#f87171', '#60a5fa', '#34d399', '#fbbf24'],
-        }]
-    };
-    new Chart(document.getElementById('pieChart'), { type: 'pie', data: pieData });
-
-    // Données fictives pour Line Chart
-    const lineData = {
-        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'],
-        datasets: [{
-            label: 'Dépenses',
-            data: [1200, 900, 1400, 1100, 1300, 1000, 900],
-            borderColor: '#f87171',
-            fill: false,
-        },{
-            label: 'Revenus',
-            data: [3000, 3500, 3200, 4000, 3700, 3800, 3900],
-            borderColor: '#34d399',
-            fill: false,
-        }]
-    };
-    new Chart(document.getElementById('lineChart'), { type: 'line', data: lineData });
-
-    // Gestion du formulaire (juste frontend pour l'instant)
-    const form = document.getElementById('transactionForm');
-    const table = document.getElementById('transactionsTable');
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form));
-        const row = document.createElement('tr');
-        row.classList.add('border-b');
-        row.innerHTML = `
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(form));
+            const row = document.createElement('tr');
+            row.classList.add('border-b');
+            row.innerHTML = `
             <td class="px-4 py-2">${data.date}</td>
             <td class="px-4 py-2">${data.categorie}</td>
             <td class="px-4 py-2 ${data.type === 'depense' ? 'text-red-500' : 'text-green-500'}">
@@ -166,10 +195,94 @@
                 <button class="text-red-500 hover:underline ml-2">Supprimer</button>
             </td>
         `;
-        table.prepend(row);
-        form.reset();
-    });
-</script>
+            table.prepend(row);
+            form.reset();
+        });
 
+        // Gestion du formulaire catégorie
+        const budgetList = document.getElementById('budgetList');
+        //--------------------------------------------------------------------
+        const categoryForm = document.getElementById('categoryForm');
+
+        categoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(categoryForm));
+
+            try {
+                const res = await fetch('/api/categories/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+
+                console.log('helloooo')
+                const result = await res.json();
+
+                console.log('hello')
+                if (!res.ok) {
+                    // 🔹 push every error separately as object
+                    if (result.errors && Array.isArray(result.errors)) {
+                        result.errors.forEach(err => {
+                            flashMessages.push({
+                                type: 'error',
+                                text: err.message
+                            });
+                        });
+                    } else {
+                        flashMessages.push({
+                            type: 'error',
+                            text: "Erreur inconnue"
+                        });
+                    }
+
+                    showFlashMessages(flashMessages);
+                    return;
+                }
+
+                // si succès
+                flashMessages.push({
+                    type: 'success',
+                    text: "Catégorie ajoutée avec succès !"
+                });
+                showFlashMessages(flashMessages);
+                console.log("Catégorie ajoutée :", result);
+
+            } catch (err) {
+                flashMessages.push({
+                    type: 'error',
+                    text: err.message
+                });
+                console.error(err);
+                showFlashMessages(flashMessages);
+            }
+        });
+
+        //--------------------------------------------------------------------
+        //error gestion 
+        window.addEventListener('DOMContentLoaded', () => {
+            const flashMessages = [];
+
+    <% if (success_msg && success_msg.length > 0) { %>
+                flashMessages.push({ type: 'success', text: "<%= success_msg %>" });
+    <% } %>
+
+    <% if (error_msg && error_msg.length > 0) { %>
+      <% error_msg.forEach(err => { %>
+                    flashMessages.push({ type: 'error', text: "<%= typeof err === 'string' ? err : err.message %>" });
+      <% }) %>
+    <% } %>
+
+    if (flashMessages.length > 0) {
+                showFlashMessages(flashMessages); // call function from flashMessages.js
+                error_msg = [];
+                success_msg = [];
+            }
+        });
+    </script>
+    <script src="/js/flashMessages.js"></script>
 </body>
+
 </html>

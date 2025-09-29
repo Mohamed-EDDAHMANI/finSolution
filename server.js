@@ -15,6 +15,7 @@ const cookieParser = require('cookie-parser');
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const categories = require('./routes/categories');
 
 
 // ============================
@@ -34,7 +35,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 1000 * 60 * 60, 
-      httpOnly: true,
+      // httpOnly: true,
     },
   })
 );
@@ -89,6 +90,8 @@ app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
 
 app.use('/dashboard', userRoutes);
+
+app.use('/api/categories', categories);
 
 // Static uploads (optional if you want to serve uploaded pictures)
 app.use('/uploads', express.static(__dirname + '/uploads'));

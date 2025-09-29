@@ -2,7 +2,20 @@ const fs = require("fs");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
-const { createAccessToken } = require("../utils/token.js");
+const { createAccessToken, createRefreshToken } = require("../utils/token.js");
+
+// Helper to set session messages
+const setSessionMessage = (req, type, messages) => {
+  req.session.messages = req.session.messages || {};
+  req.session.messages[type] = Array.isArray(messages) ? messages : [messages];
+};
+
+// Helper to get and clear session messages
+const getSessionMessage = (req, type) => {
+  const msgs = (req.session.messages && req.session.messages[type]) || [];
+  if (req.session.messages) delete req.session.messages[type];
+  return msgs;
+};
 
 // 🟢 Login
 exports.login = async (req, res) => {
@@ -11,31 +24,25 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      req.flash("error", "Invalid email or password");
+      setSessionMessage(req, 'error', 'Invalid email or password');
       return res.redirect("/auth/login");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      req.flash("error", "Invalid email or password");
+      setSessionMessage(req, 'error', 'Invalid email or password');
       return res.redirect("/auth/login");
     }
 
-    const accessToken = createAccessToken(user);
-
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      maxAge: 15 * 60 * 1000
-    });
-
     req.session.userId = user.id;
     req.session.displayName = user.displayName;
-    req.flash("success", "Logged in successfully!");
+    req.session.picture = user.picture;
+    setSessionMessage(req, 'success', 'Logged in successfully!');
     res.redirect("/dashboard");
 
   } catch (err) {
     console.error("Login error:", err);
-    req.flash("error", "Server error, please try again");
+    setSessionMessage(req, 'error', 'Server error, please try again');
     res.redirect("/auth/login");
   }
 };
@@ -47,14 +54,14 @@ exports.register = async (req, res) => {
 
     if (!email || !password || !displayName || !currency) {
       if (req.file) fs.unlinkSync(req.file.path);
-      req.flash("error", "All fields are required");
+      setSessionMessage(req, 'error', 'All fields are required');
       return res.redirect("/auth/register");
     }
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       if (req.file) fs.unlinkSync(req.file.path);
-      req.flash("error", "Email already in use");
+      setSessionMessage(req, 'error', 'Email already in use');
       return res.redirect("/auth/register");
     }
 
@@ -69,19 +76,16 @@ exports.register = async (req, res) => {
       picture: picturePath,
     });
 
-    req.flash("success", "Account created successfully! Please login.");
+    setSessionMessage(req, 'success', 'Account created successfully! Please login.');
     res.redirect("/auth/login");
 
   } catch (err) {
     console.error("Register error:", err);
     if (req.file) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (fsErr) {
-        console.error("Error deleting file:", fsErr);
-      }
+      try { fs.unlinkSync(req.file.path); } 
+      catch (fsErr) { console.error("Error deleting file:", fsErr); }
     }
-    req.flash("error", "Server error, please try again");
+    setSessionMessage(req, 'error', 'Server error, please try again');
     res.redirect("/auth/register");
   }
 };
@@ -94,61 +98,52 @@ exports.forgotPassword = async (req, res) => {
       return res.render('auth/forgot-password', {
         emailError: 'Email is required!',
         showCodeStep: false,
-        email: ''
+        email: '',
+        success_msg: getSessionMessage(req, 'success'),
+        error_msg: getSessionMessage(req, 'error'),
       });
     }
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      req.flash('error', 'Email not found!');
+      setSessionMessage(req, 'error', 'Email not found!');
       return res.render('auth/forgot-password', {
         showCodeStep: false,
-        success_msg: req.flash('success'),
-        error_msg: req.flash('error'),
+        success_msg: getSessionMessage(req, 'success'),
+        error_msg: getSessionMessage(req, 'error'),
         email: ''
       });
     }
 
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const { sendResetCode } = require("../utils/sendMail.js");
+    const sent = await sendResetCode(email, resetCode);
 
-    try {
-      const { sendResetCode } = require("../utils/sendMail.js");
-      const sent = await sendResetCode(email, resetCode);
-
-      if (!sent) {
-        req.flash("error", 'Failed to send email');
-        return res.render('auth/forgot-password', {
-          showCodeStep: false,
-          success_msg: [],
-          error_msg: req.flash('error'),
-          email: ''
-        });
-      }
-
-      return res.render('auth/forgot-password', {
-        showCodeStep: true,
-        resetCode,
-        success_msg: ['Reset code sent to your email'],
-        error_msg: [],
-        email
-      });
-
-    } catch (mailError) {
-      req.flash("error", `Mail sending error: ${mailError}`);
+    if (!sent) {
+      setSessionMessage(req, 'error', 'Failed to send email');
       return res.render('auth/forgot-password', {
         showCodeStep: false,
         success_msg: [],
-        error_msg: req.flash('error'),
+        error_msg: getSessionMessage(req, 'error'),
         email: ''
       });
     }
 
+    return res.render('auth/forgot-password', {
+      showCodeStep: true,
+      resetCode,
+      success_msg: ['Reset code sent to your email'],
+      error_msg: [],
+      email
+    });
+
   } catch (err) {
-    req.flash("error", `Server error, ${err.message}`);
+    console.error(err);
+    setSessionMessage(req, 'error', `Server error: ${err.message}`);
     res.status(500).render('auth/forgot-password', {
       emailError: 'Server error, please try again',
-      success_msg: req.flash('success'),
-      error_msg: req.flash('error'),
+      success_msg: getSessionMessage(req, 'success'),
+      error_msg: getSessionMessage(req, 'error'),
       showCodeStep: false,
       email: ''
     });
@@ -161,14 +156,14 @@ exports.resetPassword = async (req, res) => {
   const user = await User.findOne({ where: { email } });
 
   if (!user) {
-    req.flash("error", "User not found");
+    setSessionMessage(req, 'error', 'User not found');
     return res.redirect("/auth/forgot-password");
   }
 
   user.password = await bcrypt.hash(password, 10);
   await user.save();
 
-  req.flash("success", "Password reset successfully");
+  setSessionMessage(req, 'success', 'Password reset successfully');
   res.redirect("/auth/login");
 };
 
@@ -176,7 +171,6 @@ exports.resetPassword = async (req, res) => {
 exports.logout = (req, res) => {
   req.session.destroy(() => {
     res.clearCookie('accessToken');
-    req.flash("success", "Logged out successfully");
     res.redirect("/auth/login");
   });
 };
