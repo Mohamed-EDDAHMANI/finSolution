@@ -46,4 +46,5 @@ function showFlashMessages(flashMessages) {
     }
 
     showNextMessage();
+    flashMessages = [];
 }

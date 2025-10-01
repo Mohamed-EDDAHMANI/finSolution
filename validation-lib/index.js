@@ -1,4 +1,12 @@
-const { isRequired, isEmail, minLength, isAlphabetic, isInteger, isNumber, isPositive } = require('./validators');
+const {
+    isRequired,
+    isEmail,
+    minLength,
+    isAlphabetic,
+    isInteger,
+    isNumber,
+    isPositive
+} = require('./validators');
 
 // Helper to set session messages
 const setSessionMessage = (req, type, messages) => {
@@ -6,15 +14,14 @@ const setSessionMessage = (req, type, messages) => {
     req.session.messages[type] = Array.isArray(messages) ? messages : [messages];
 };
 
-function validate(rules, template) {
+function validate(rules, options = {}) {
     return (req, res, next) => {
-        console.log(req.body)
         const errors = [];
 
         for (const field in rules) {
             const validators = rules[field];
             const value = req.body[field];
-            
+
             validators.forEach(validator => {
                 const result = validator(value);
                 if (result !== true) errors.push({ field, message: result });
@@ -22,15 +29,26 @@ function validate(rules, template) {
         }
 
         if (errors.length > 0) {
-            if (req.headers['content-type'] === 'application/json' || req.xhr) {
-                return res.status(400).json({ errors });
+            // --- Case 1: Request AJAX / JSON API
+            if (req.headers['content-type'] === 'application/json' || req.xhr || req.accepts('json')) {
+                return res.status(422).json({
+                    status: "error",
+                    errors
+                });
             }
-            // Save errors to session instead of flash
+
+            // --- Case 2: Request Web (session + redirect)
             setSessionMessage(req, 'error', errors.map(e => e.message));
-            if (template) {
-                return res.redirect(template);
-            }else{
-                return res.redirect(req.originalUrl)
+
+            if (options.redirect) {
+                // Redirect to given view/template
+                return res.redirect(options.redirect);
+            } else if (req.originalUrl) {
+                // Redirect back to the same URL
+                return res.redirect(req.originalUrl);
+            } else {
+                // --- Case 3: No template / redirect (e.g. traitement route)
+                return res.status(400).send(errors.map(e => e.message).join(', '));
             }
         }
 
@@ -38,4 +56,13 @@ function validate(rules, template) {
     };
 }
 
-module.exports = { validate, isRequired, isEmail, minLength, isAlphabetic, isInteger, isNumber, isPositive };
+module.exports = {
+    validate,
+    isRequired,
+    isEmail,
+    minLength,
+    isAlphabetic,
+    isInteger,
+    isNumber,
+    isPositive
+};

@@ -1,30 +1,37 @@
 // ============================
-// 1. IMPORTS
+// 1. IMPORTS ------
 // ============================
-require('dotenv').config();
-const express = require('express');
-const { sequelize } = require('./models'); 
+require("dotenv").config();
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const flash = require("connect-flash");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
+
+// Database & Models
+const { sequelize } = require("./models");
+
+// Middleware
 const authMiddleware = require("./middleware/authMiddleware");
-const path = require('path');
-const cookieParser = require('cookie-parser');
 
 // Routes
-const indexRoutes = require('./routes/index');
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const categories = require('./routes/categories');
+const indexRoutes = require("./routes/index");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const categoriesRoutes = require("./routes/categoriesRoutes");
 
 
 // ============================
-// 2. SESSION CONFIGURATION
-// ============================ 
-// Initialize app BEFORE using any middleware
+// 2. INITIALIZATION
+// ============================
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Create session store instance to allow sync
+
+
+// ============================
+// 3. SESSION & FLASH
+// ============================
 const sessionStore = new SequelizeStore({ db: sequelize });
 
 app.use(
@@ -34,106 +41,97 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60, 
+      maxAge: 1000 * 60 * 60, // 1h
       // httpOnly: true,
     },
   })
 );
-app.use(flash());
-
-app.use((req, res, next) => {
-  res.locals.success_msg = req.flash("success");
-  res.locals.error_msg = req.flash("error");
-  next();
-});
 
 
 // ============================
-// 2. APP CONFIGURATION
-// ============================ 
+// 4. APP CONFIGURATION
+// ============================
 
-// static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Static files
+app.use(express.static(path.join(__dirname, "public")));
 
-// JSON parser
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Cookie parser
 app.use(cookieParser());
 
-
-
-
-// Lightweight request logger to help debug hanging requests
+// Simple request logger
 app.use((req, res, next) => {
   const start = Date.now();
-  res.on('finish', () => {
+  res.on("finish", () => {
     const ms = Date.now() - start;
     console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} in ${ms}ms`);
   });
   next();
 });
 
-// Auth middleware for all request
-// app.use(authMiddleware.isAuth);
+// Auth middleware applied globally
+app.use(authMiddleware.isAuth);
 
 // EJS setup
-app.set('view engine', 'ejs');
-app.set('views', __dirname + '/views');
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
 
 // ============================
-// 3. ROUTES
+// 5. ROUTES
 // ============================
+
 // Main routes
-app.use('/', indexRoutes);
+app.use("/", indexRoutes);
 
 // Auth routes
-app.use('/auth', authRoutes);
+app.use("/auth", authRoutes);
 
-app.use('/dashboard', userRoutes);
+// User dashboard routes
+app.use("/dashboard", userRoutes);
 
-app.use('/api/categories', categories);
+// API routes
+app.use("/api/categories", categoriesRoutes);
 
-// Static uploads (optional if you want to serve uploaded pictures)
-app.use('/uploads', express.static(__dirname + '/uploads'));
+// Static uploads
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-
-// Handle 404 - Keep this as the last route
+// 404 Handler
 app.use((req, res) => {
-  res.status(404).render('notfound');
+  res.status(404).render("notfound");
 });
 
 
 // ============================
-// 4. DATABASE CONNECTION
+// 6. DATABASE CONNECTION
 // ============================
 (async () => {
   try {
     await sequelize.authenticate();
 
-    if (process.env.DB_SYNC_ALTER === 'true') {
+    if (process.env.DB_SYNC_ALTER === "true") {
       await sequelize.sync({ alter: true });
-      console.log('✅ DB synced with alter');
+      console.log("✅ DB synced with alter");
     }
 
     // Ensure session table exists
     await sessionStore.sync();
 
-    console.log('✅ DB connection OK');
+    console.log("✅ DB connection OK");
   } catch (err) {
-    console.error('❌ DB connection failed, server still running:', err.message);
+    console.error("❌ DB connection failed, server still running:", err.message);
   }
 })();
 
 
-
-
 // ============================
-// 5. SERVER START
+// 7. START SERVER
 // ============================
 const startServer = async () => {
-  // await connectDB();
-
-  app.listen(PORT,  () => {
+  app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
 };

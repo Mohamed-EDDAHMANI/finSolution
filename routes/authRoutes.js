@@ -2,85 +2,95 @@ const express = require('express');
 const router = express.Router();
 const authController = require("../controllers/authController");
 const upload = require("../middleware/upload");
-const { validate, isRequired, isEmail, minLength, isAlphabetic } = require('../validation-lib');
+const { validate, isRequired, isEmail, minLength } = require("../validation-lib");
 
-// Helper to get and clear session messages
-const getSessionMessage = (req, type) => {
-  const msgs = (req.session.messages && req.session.messages[type]) || [];
-  if (req.session.messages) delete req.session.messages[type];
-  return msgs;
-};
-
-const sessionDistroy = (req) => {
-  // tmas7 session kamla
-  if (req.session) {
-    req.session.destroy(err => {
-      if (err) console.log('Error destroying session:', err);
-    });
-  }
-};
-
-
-// GET /login
+// GET routes - with flash message support
 router.get('/login', (req, res) => {
-  const error = getSessionMessage(req, 'error')
-  const success = getSessionMessage(req, 'success');
-// hna khwi lia session mn dakchi li fiha 
-sessionDistroy(red)
-  res.render('auth/login', {
-    error_msg: error,
-    success_msg: success
+  const success_msg = req.session.messages?.success || [];
+  const error_msg = req.session.messages?.error || [];
+  
+  // Clear messages after reading
+  if (req.session.messages) {
+    delete req.session.messages.success;
+    delete req.session.messages.error;
+  }
+  
+  res.render('auth/login', { 
+    success_msg,
+    error_msg
   });
 });
 
-// POST /login
-router.post('/login',
+router.get('/register', (req, res) => {
+  const success_msg = req.session.messages?.success || [];
+  const error_msg = req.session.messages?.error || [];
+  
+  // Clear messages after reading
+  if (req.session.messages) {
+    delete req.session.messages.success;
+    delete req.session.messages.error;
+  }
+  
+  res.render('auth/register', { 
+    success_msg,
+    error_msg
+  });
+});
+
+// POST routes with validation
+router.post('/login', 
   validate({
-    email: [isRequired('email is required'), isEmail()],
-    password: [isRequired('password is required')]
+    email: [isRequired('Email is required'), isEmail('Please enter a valid email')],
+    password: [isRequired('Password is required')]
   }),
   authController.login
 );
 
-// GET /register
-router.get('/register', (req, res) => {
-  res.render('auth/register', {
-    error_msg: getSessionMessage(req, 'error'),
-    success_msg: getSessionMessage(req, 'success')
-  });
-});
-
-// POST /register
-router.post("/register",
-  upload.single("picture"),
+router.post('/register', 
+  upload.single('picture'),
   validate({
-    displayName: [isRequired('name is required'), isAlphabetic('name must be alphabetic')],
-    email: [isRequired('email is required'), isEmail()],
-    password: [isRequired('password is required'), minLength(6, 'password must be at least 6 characters')],
-    currency: [isRequired('currency is required')]
+    displayName: [isRequired('Name is required'), minLength(2, 'Name must be at least 2 characters')],
+    email: [isRequired('Email is required'), isEmail('Please enter a valid email')],
+    password: [isRequired('Password is required'), minLength(6, 'Password must be at least 6 characters')],
+    currency: [isRequired('Currency is required')]
   }),
   authController.register
 );
 
-// GET /logout
-router.get("/logout", authController.logout);
-
-// GET /forgot-password
 router.get('/forgot-password', (req, res) => {
+  const success_msg = req.session.messages?.success || [];
+  const error_msg = req.session.messages?.error || [];
+  
+  // Clear messages after reading
+  if (req.session.messages) {
+    delete req.session.messages.success;
+    delete req.session.messages.error;
+  }
+  
   res.render('auth/forgot-password', {
     showCodeStep: false,
-    email: '',
-    emailError: null,
-    codeError: null,
-    success_msg: getSessionMessage(req, 'success'),
-    error_msg: getSessionMessage(req, 'error')
+    success_msg,
+    error_msg,
+    email: ''
   });
 });
 
-// POST /forgot-password
-router.post('/forgot-password', authController.forgotPassword);
+router.post('/forgot-password', 
+  validate({
+    email: [isRequired('Email is required'), isEmail('Please enter a valid email')]
+  }),
+  authController.forgotPassword
+);
 
-// POST /resetPassword
-router.post('/resetPassword', authController.resetPassword);
+router.post('/reset-password', 
+  validate({
+    email: [isRequired('Email is required')],
+    password: [isRequired('Password is required'), minLength(6, 'Password must be at least 6 characters')],
+    confirmPassword: [isRequired('Please confirm your password')]
+  }),
+  authController.resetPassword
+);
+
+router.post('/logout', authController.logout);
 
 module.exports = router;

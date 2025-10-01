@@ -1,18 +1,26 @@
-// middleware/isAuth.js
 function isAuth(req, res, next) {
-  // Allow public paths (auth routes)
-  if (req.path.startsWith('/auth')) {
-    console.log('helo');
-    return next();
+  // Protected paths that need authentication
+  const protectedPaths = [
+    '/dashboard',
+    '/profile',
+    '/settings',
+  ];
+
+  // Check if the current path is protected
+  const isProtected = protectedPaths.some(path => req.path.startsWith(path));
+
+  if (isProtected) {
+    // Check session only if it's a protected path
+    if (!req.session.user) {
+      console.log('User not authenticated, redirecting to login');
+      req.session.messages = req.session.messages || {};
+      req.session.messages.error = ['You must be logged in to access this page.'];
+      return res.redirect("/auth/login");
+    }
+    console.log('User authenticated:', req.session.user.email);
   }
 
-  // Check if user is logged in with session
-  if (!req.session || !req.session.userId) {
-    req.flash("error", "Please login first...");
-    return res.redirect("/auth/login");
-  }
-
-  // User is authenticated → continue
+  // If not protected, or if authenticated, continue
   next();
 }
 
