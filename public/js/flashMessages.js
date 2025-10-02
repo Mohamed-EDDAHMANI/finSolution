@@ -5,14 +5,13 @@ function showFlashMessages(flashMessages) {
     document.body.appendChild(flashContainer);
 
     let index = 0;
-    let stop = false; // flag bach n9dro nstop affichage
+    let stop = false;
 
-    // listener global: click anywhere stops messages
     function stopMessages() {
         stop = true;
-        flashContainer.remove(); // remove container w tous les messages
-        flashMessages.length = 0; // khawi variable dyal les erreurs
-        document.removeEventListener('click', stopMessages); // cleanup
+        flashContainer.remove();
+        flashMessages.length = 0;
+        document.removeEventListener('click', stopMessages);
     }
     document.addEventListener('click', stopMessages);
 
@@ -48,3 +47,28 @@ function showFlashMessages(flashMessages) {
     showNextMessage();
     flashMessages = [];
 }
+
+// ===========================
+// Server flash helper
+// ===========================
+function initServerFlashMessages(serverData) {
+    let serverFlash = [];
+
+    if (serverData.success_msg && serverData.success_msg.length > 0) {
+        serverFlash.push({ type: 'success', text: serverData.success_msg });
+    }
+
+    if (serverData.error_msg && serverData.error_msg.length > 0) {
+        serverData.error_msg.forEach(err => {
+            serverFlash.push({ type: 'error', text: err instanceof Error ? err.message : err });
+        });
+    }
+
+    if (serverFlash.length > 0) {
+        showFlashMessages(serverFlash);
+        serverFlash = [];
+    }
+}
+
+window.showFlashMessages = showFlashMessages;
+window.initServerFlashMessages = initServerFlashMessages;

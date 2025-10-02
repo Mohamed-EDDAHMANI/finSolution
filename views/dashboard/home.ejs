@@ -19,7 +19,8 @@
                 <% } else { %>
                     <p>Bienvenue, Guest!</p>
                     <% } %>
-                        <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
+                        <button id="logoutBtn"
+                            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
                             Déconnexion
                         </button>
         </div>
@@ -30,7 +31,9 @@
         <!-- Solde actuel -->
         <div class="bg-white shadow rounded-lg p-6 mb-6 hover:shadow-lg transition">
             <h2 class="text-gray-500 text-sm">Solde Actuel</h2>
-            <p class="text-3xl font-bold text-green-500">3,500 MAD</p>
+            <p class="text-3xl font-bold text-green-500">
+                <%= (typeof balance !=='undefined' && balance !==null) ? balance.toFixed(2) : "0.00" %> MAD
+            </p>
         </div>
 
         <div class="grid md:grid-cols-3 gap-6">
@@ -42,15 +45,15 @@
                     <div>
                         <label class="block text-gray-700">Type</label>
                         <select class="w-full border rounded px-3 py-2" name="type">
-                            <option value="revenu">Revenu</option>
-                            <option value="depense">Dépense</option>
+                            <option value="income">Revenu</option>
+                            <option value="expense">Dépense</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-gray-700">Catégorie</label>
-                        <select name="categorie" class="w-full border rounded px-3 py-2">
+                        <select name="categoryId" class="w-full border rounded px-3 py-2">
                             <% categories.forEach(cat=> { %>
-                                <option value="<%= cat.name %>">
+                                <option value="<%= cat.id %>">
                                     <%= cat.name %>
                                 </option>
                                 <% }) %>
@@ -58,7 +61,7 @@
                     </div>
                     <div>
                         <label class="block text-gray-700">Montant</label>
-                        <input type="number" class="w-full border rounded px-3 py-2" name="montant"
+                        <input type="number" class="w-full border rounded px-3 py-2" name="amount"
                             placeholder="Ex: 150">
                     </div>
                     <div>
@@ -84,16 +87,38 @@
                         </tr>
                     </thead>
                     <tbody id="transactionsTable">
-                        <tr class="border-b">
-                            <td class="px-4 py-2">28/09/2025</td>
-                            <td class="px-4 py-2">Alimentation</td>
-                            <td class="px-4 py-2 text-red-500">-150 MAD</td>
-                            <td class="px-4 py-2">Dépense</td>
-                            <td class="px-4 py-2">
-                                <button class="text-blue-500 hover:underline">Éditer</button>
-                                <button class="text-red-500 hover:underline ml-2">Supprimer</button>
-                            </td>
-                        </tr>
+                        <% if (!transactions || transactions.length===0) { %>
+                            <tr>
+                                <td colspan="5" class="text-center text-gray-500 py-4">Aucune transaction
+                                    disponible</td>
+                            </tr>
+                            <% } else { %>
+                                <% transactions.forEach(trx=> { %>
+                                    <tr class="border-b" data-id="<%= trx.id %>">
+                                        <td class="px-4 py-2">
+                                            <%= trx.date.toLocaleDateString('fr-FR') %>
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            <!-- <%= trx.categoryId %> -->
+                                            <%= categories.find(cat => cat.id === trx.categoryId)?.name || 'N/A' %>
+                                        </td>
+                                        <td
+                                            class="px-4 py-2 <%= trx.type === 'expense' ? 'text-red-500' : 'text-green-500' %>">
+                                            <%= trx.type==='expense' ? '-' : '+' %>
+                                                <%= trx.amount %> MAD
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            <%= trx.type==='expense' ? 'Dépense' : 'Revenu' %>
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            <button
+                                                class="text-blue-500 hover:underline editTransaction">Éditer</button>
+                                            <button
+                                                class="text-red-500 hover:underline ml-2 deleteTransaction">Supprimer</button>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                        <% } %>
                     </tbody>
                 </table>
                 <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 transition">Exporter CSV</button>
@@ -107,21 +132,23 @@
                 <ul class="space-y-3 mb-4" id="budgetList">
                     <% categories.forEach(cat=> { %>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                            <span><%= cat.name %> : <%= cat.current || 0 %> MAD / <%= cat.limit || 0 %> MAD</span>
+                            <span>
+                                <%= cat.name %> : <%= cat.current || 0 %> MAD / <%= cat.limit || 0 %> MAD
+                            </span>
                             <div class="flex gap-2">
-                                <button class="updateCategory bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-sm transition"
-                                    data-id="<%= cat._id %>" 
-                                    data-name="<%= cat.name %>" 
-                                    data-limit="<%= cat.limit %>">
+                                <button
+                                    class="updateCategory bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-sm transition"
+                                    data-id="<%= cat.id %>" data-name="<%= cat.name %>" data-limit="<%= cat.limit %>">
                                     Modifier
                                 </button>
-                                <button class="deleteCategory bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm transition"
-                                    data-id="<%= cat._id %>">
+                                <button
+                                    class="deleteCategory bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm transition"
+                                    data-id="<%= cat.id %>">
                                     Supprimer
                                 </button>
                             </div>
                         </li>
-                    <% }) %>
+                        <% }) %>
                 </ul>
 
                 <!-- Formulaire Catégorie -->
@@ -137,8 +164,7 @@
                         <input type="number" name="limit" id="categoryLimit" placeholder="Ex: 2000"
                             class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
                     </div>
-                    <button type="submit"
-                        id="categorySubmitBtn"
+                    <button type="submit" id="categorySubmitBtn"
                         class="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600 transition">
                         Ajouter Catégorie
                     </button>
@@ -209,13 +235,18 @@
                 const res = await fetch('/api/transactions/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                    credentials: 'include'
+                    body: JSON.stringify(data)
                 });
                 const result = await res.json();
-
+    
                 if (!res.ok) {
-                    flashMessages.push({ type: 'error', text: result.message || "Erreur" });
+                    if (Array.isArray(result.errors) && result.errors.length > 0) {
+                        result.errors.forEach(item => {
+                            flashMessages.push({ type: 'error', text: item.message || 'Erreur' });
+                        });
+                    } else {
+                        flashMessages.push({ type: 'error', text: result.message || 'Erreur' });
+                    }
                     showFlashMessages(flashMessages);
                     flashMessages = [];
                     return;
@@ -226,106 +257,21 @@
 
                 const row = document.createElement('tr');
                 row.classList.add('border-b');
+                row.dataset.id = result.id;
                 row.innerHTML = `
-                    <td class="px-4 py-2">${result.date}</td>
+                    <td class="px-4 py-2">${new Date(result.date).toLocaleDateString('fr-FR')}</td>
                     <td class="px-4 py-2">${result.categorie}</td>
                     <td class="px-4 py-2 ${result.type === 'depense' ? 'text-red-500' : 'text-green-500'}">
                         ${result.type === 'depense' ? '-' : '+'}${result.montant} MAD
                     </td>
                     <td class="px-4 py-2">${result.type === 'depense' ? 'Dépense' : 'Revenu'}</td>
                     <td class="px-4 py-2">
-                        <button class="text-blue-500 hover:underline">Éditer</button>
-                        <button class="text-red-500 hover:underline ml-2">Supprimer</button>
+                        <button class="text-blue-500 hover:underline editTransaction">Éditer</button>
+                        <button class="text-red-500 hover:underline ml-2 deleteTransaction">Supprimer</button>
                     </td>
                 `;
                 transactionsTable.prepend(row);
                 transactionForm.reset();
-
-            } catch (err) {
-                flashMessages.push({ type: 'error', text: err.message });
-                showFlashMessages(flashMessages);
-                flashMessages = [];
-            }
-        });
-
-        // Update/Delete Category Logic
-        const categoryForm = document.getElementById('categoryForm');
-        const categoryIdInput = document.getElementById('categoryId');
-        const categoryNameInput = document.getElementById('categoryName');
-        const categoryLimitInput = document.getElementById('categoryLimit');
-        const categorySubmitBtn = document.getElementById('categorySubmitBtn');
-
-        document.addEventListener("click", (e) => {
-            if (e.target.classList.contains("updateCategory")) {
-                const id = e.target.dataset.id;
-                const name = e.target.dataset.name;
-                const limit = e.target.dataset.limit;
-
-                categoryIdInput.value = id;
-                categoryNameInput.value = name;
-                categoryLimitInput.value = limit;
-                categorySubmitBtn.textContent = "Mettre à jour";
-                categorySubmitBtn.classList.replace("bg-blue-500", "bg-yellow-500");
-            }
-
-            if (e.target.classList.contains("deleteCategory")) {
-                const id = e.target.dataset.id;
-                if (confirm("Voulez-vous vraiment supprimer cette catégorie ?")) {
-                    fetch(`/api/categories/delete/${id}`, {
-                        method: "DELETE",
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(result => {
-                        if (result.success) {
-                            e.target.closest("li").remove();
-                            flashMessages.push({ type: 'success', text: "Catégorie supprimée avec succès !" });
-                            showFlashMessages(flashMessages);
-                            flashMessages = [];
-                        } else {
-                            flashMessages.push({ type: 'error', text: result.message });
-                            showFlashMessages(flashMessages);
-                            flashMessages = [];
-                        }
-                    })
-                    .catch(err => {
-                        flashMessages.push({ type: 'error', text: err.message });
-                        showFlashMessages(flashMessages);
-                        flashMessages = [];
-                    });
-                }
-            }
-        });
-
-        categoryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(categoryForm));
-
-            const isUpdate = !!data.id;
-            const url = isUpdate ? `/api/categories/update/${data.id}` : '/api/categories/create';
-            const method = isUpdate ? 'PUT' : 'POST';
-
-            try {
-                const res = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                    credentials: 'include'
-                });
-                const result = await res.json();
-
-                if (!res.ok) {
-                    flashMessages.push({ type: 'error', text: result.message || "Erreur" });
-                    showFlashMessages(flashMessages);
-                    flashMessages = [];
-                    return;
-                }
-
-                flashMessages.push({ type: 'success', text: isUpdate ? "Catégorie mise à jour !" : "Catégorie ajoutée avec succès !" });
-                showFlashMessages(flashMessages);
-                flashMessages = [];
-
-                window.location.reload();
 
             } catch (err) {
                 flashMessages.push({ type: 'error', text: err.message });
@@ -358,11 +304,12 @@
             let serverFlash = [];
 
             <% if (success_msg && success_msg.length > 0) { %>
-                serverFlash.push({ type: 'success', text: "<%= success_msg %>" });
+                serverFlash.push({ type: 'success', text: <%= JSON.stringify(success_msg) %> });
             <% } %>
+
             <% if (error_msg && error_msg.length > 0) { %>
                 <% error_msg.forEach(err => { %>
-                    serverFlash.push({ type: 'error', text: "<%= typeof err === 'string' ? err : err.message %>" });
+                    serverFlash.push({ type: 'error', text: <%= JSON.stringify(err instanceof Error ? err.message : err) %> });
                 <% }) %>
             <% } %>
 
@@ -371,6 +318,122 @@
                 serverFlash = [];
             }
         });
+
+        // =========================
+        // CRUD Category Functions
+        // =========================
+        const categoryForm = document.getElementById('categoryForm');
+        const categoryIdInput = document.getElementById('categoryId');
+        const categoryNameInput = document.getElementById('categoryName');
+        const categoryLimitInput = document.getElementById('categoryLimit');
+        const budgetList = document.getElementById('budgetList');
+
+        categoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = categoryIdInput.value;
+            const name = categoryNameInput.value.trim();
+            const limit = Number(categoryLimitInput.value);
+
+            // Validation côté client avec flash
+            if (!name || isNaN(limit)) {
+                flashMessages.push({ type: 'error', text: 'Nom et limite valides requis' });
+                showFlashMessages(flashMessages);
+                flashMessages = [];
+                return;
+            }
+
+            try {
+                const url = id ? `/api/categories/update/${id}` : '/api/categories/create';
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, limit }),
+                    credentials: 'include'
+                });
+
+                const result = await res.json();
+
+                // Erreur côté serveur
+                if (!res.ok) {
+                    if (Array.isArray(result.errors) && result.errors.length > 0) {
+                        result.errors.forEach(item => {
+                            flashMessages.push({ type: 'error', text: item.message || 'Erreur' });
+                        });
+                    } else {
+                        flashMessages.push({ type: 'error', text: result.message || 'Erreur' });
+                    }
+                    showFlashMessages(flashMessages);
+                    flashMessages = [];
+                    return;
+                }
+
+                // Reset form
+                categoryForm.reset();
+                categoryIdInput.value = '';
+                categorySubmitBtn.textContent = 'Ajouter Catégorie';
+
+                // Message succès
+                flashMessages.push({ type: 'success', text: result.message || 'Catégorie enregistrée avec succès' });
+                showFlashMessages(flashMessages);
+                flashMessages = [];
+
+                // Refresh list
+                setTimeout(() => window.location.reload(), 1000);
+
+            } catch (err) {
+                flashMessages.push({ type: 'error', text: err.message });
+                showFlashMessages(flashMessages);
+                flashMessages = [];
+            }
+        });
+
+
+
+        budgetList.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('updateCategory')) {
+                const id = e.target.dataset.id;
+                const name = e.target.dataset.name;
+                const limit = e.target.dataset.limit;
+                categoryIdInput.value = id;
+                categoryNameInput.value = name;
+                categoryLimitInput.value = limit;
+                categorySubmitBtn.textContent = 'Modifier Catégorie';
+            } else if (e.target.classList.contains('deleteCategory')) {
+                const id = e.target.dataset.id;
+                if (confirm('Voulez-vous supprimer cette catégorie ?')) {
+                    try {
+                        const res = await fetch(`/api/categories/delete/${id}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
+                        const result = await res.json();
+
+                        if (!res.ok) {
+                            flashMessages.push({ type: 'error', text: result.message || 'Erreur' });
+                            showFlashMessages(flashMessages);
+                            flashMessages = [];
+                            return;
+                        }
+
+                        flashMessages.push({ type: 'success', text: result.message || 'Catégorie supprimée avec succès' });
+                        showFlashMessages(flashMessages);
+                        flashMessages = [];
+
+                        // Rafraîchir la liste après un petit délai pour voir le message
+                        setTimeout(() => window.location.reload(), 1000);
+
+                    } catch (err) {
+                        flashMessages.push({ type: 'error', text: err.message });
+                        showFlashMessages(flashMessages);
+                        flashMessages = [];
+                    }
+                }
+            }
+        });
+
+
     </script>
     <script src="/js/flashMessages.js"></script>
 </body>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Utilisateur</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-lg p-4 flex justify-between items-center">
+    <div class="text-xl font-bold">FinSolution Finance</div>
+    <div class="flex items-center gap-4">
+      <% if (displayName) { %>
+        <span>Bienvenue, <%= displayName %>!</span>
+        <% } else { %>
+          <p>Bienvenue, Guest!</p>
+          <% } %>
+            <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
+              Déconnexion
+            </button>
+    </div>
+  </nav>
+
+  <div class="container mx-auto mt-6 p-4">
+
+    <!-- Solde actuel -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6 hover:shadow-lg transition">
+      <h2 class="text-gray-500 text-sm">Solde Actuel</h2>
+      <p class=" text-3xl font-bold text-green-500" id="balance">
+        <%= (typeof balance !=='undefined' && balance !==null) ? balance.toFixed(2) : "0.00" %> MAD
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <%- include("components/transactions", { categories, transactions }) %>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mt-6">
+      <%- include("components/categories", { categories }) %>
+        <%- include("components/budgets") %>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mt-6">
+      <%- include("components/charts") %>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initServerFlashMessages({
+        success_msg: <%= JSON.stringify(success_msg || '') %>,
+        error_msg: <%= JSON.stringify(error_msg || []) %>
+    });
+    });
+  </script>
+
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/flashMessages.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/transactions.js"></script>
+  <script src="/js/categories.js"></script>
+  <script src="/js/logout.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+<!-- Formulaire nouvelle transaction -->
+<div class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition">
+  <h3 class="text-lg font-semibold mb-4">Ajouter une Transaction</h3>
+  <form id="transactionForm" class="space-y-4">
+    <div>
+      <label class="block text-gray-700">Type</label>
+      <select class="w-full border rounded px-3 py-2" name="type">
+        <option value="income">Revenu</option>
+        <option value="expense">Dépense</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700">Catégorie</label>
+      <select name="categoryId" class="w-full border rounded px-3 py-2">
+        <% categories.forEach(cat=> { %>
+          <option value="<%= cat.id %>"><%= cat.name %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700">Montant</label>
+      <input type="number" class="w-full border rounded px-3 py-2" name="amount" placeholder="Ex: 150">
+    </div>
+    <div>
+      <label class="block text-gray-700">Date</label>
+      <input type="date" class="w-full border rounded px-3 py-2" name="date">
+    </div>
+    <button type="submit"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full transition">Ajouter</button>
+  </form>
+</div>
+
+<!-- Tableau transactions récentes -->
+<div class="bg-white shadow rounded-lg p-6 col-span-2 hover:shadow-lg transition">
+  <h3 class="text-lg font-semibold mb-4">Transactions Récentes</h3>
+  <table class="w-full text-left table-auto mb-4">
+    <thead>
+      <tr class="bg-gray-200">
+        <th class="px-4 py-2">Date</th>
+        <th class="px-4 py-2">Catégorie</th>
+        <th class="px-4 py-2">Montant</th>
+        <th class="px-4 py-2">Type</th>
+        <th class="px-4 py-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="transactionsTable">
+      <% if (!transactions || transactions.length===0) { %>
+        <tr>
+          <td colspan="5" class="text-center text-gray-500 py-4">Aucune transaction disponible</td>
+        </tr>
+      <% } else { %>
+        <% transactions.forEach(trx=> { %>
+          <tr class="border-b" data-id="<%= trx.id %>">
+            <td class="px-4 py-2"><%= trx.date.toLocaleDateString('fr-FR') %></td>
+            <td class="px-4 py-2"><%= categories.find(cat => cat.id === trx.categoryId)?.name || 'N/A' %></td>
+            <td class="px-4 py-2 <%= trx.type === 'expense' ? 'text-red-500' : 'text-green-500' %>">
+              <%= trx.type==='expense' ? '-' : '+' %><%= trx.amount %> MAD
+            </td>
+            <td class="px-4 py-2"><%= trx.type==='expense' ? 'Dépense' : 'Revenu' %></td>
+            <td class="px-4 py-2">
+              <button class=" editTransaction text-blue-500 hover:underline editTransaction" data-id="<%= trx.id %>">Éditer</button>
+              <button class=" deleteTransaction text-red-500 hover:underline ml-2 deleteTransaction" data-id="<%= trx.id %>">Supprimer</button>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
+  <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 transition">Exporter CSV</button>
+</div>

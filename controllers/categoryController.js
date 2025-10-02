@@ -27,6 +27,80 @@ exports.createCategory = async (req, res) => {
 
 }
 
+exports.update = async (req, res) => {
+  try {
+    const { name, limit } = req.body;
+    const { id } = req.params;
+
+    const [updated] = await Category.update(
+      { name, limit },
+      { where: { id } }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ status: "error", message: "Catégorie introuvable" });
+    }
+
+    const category = await Category.findByPk(id);
+
+    if (req.accepts('json')) {
+      return res.json({ status: "success", data: category });
+    }
+
+    req.session.messages = { success: ["Catégorie mise à jour avec succès"] };
+    return res.redirect('/categories');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: "error", message: "Erreur serveur" });
+  }
+};
+
+// Delete
+exports.remove = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Category.destroy({ where: { id } });
+
+    if (!deleted) {
+      return res.status(404).json({ status: "error", message: "Catégorie introuvable" });
+    }
+
+    if (req.accepts('json')) {
+      return res.json({ status: "success", message: "Catégorie supprimée" });
+    }
+
+    req.session.messages = { success: ["Catégorie supprimée avec succès"] };
+    return res.redirect('/categories');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: "error", message: "Erreur serveur" });
+  }
+};
+
+// Delete
+exports.remove = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Category.destroy({ where: { id } });
+
+    if (!deleted) {
+      return res.status(404).json({ status: "error", message: "Catégorie introuvable" });
+    }
+
+    if (req.accepts('json')) {
+      return res.json({ status: "success", message: "Catégorie supprimée" });
+    }
+
+    req.session.messages = { success: ["Catégorie supprimée avec succès"] };
+    return res.redirect('/categories');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: "error", message: "Erreur serveur" });
+  }
+};
+
 exports.getCategories = async (req, res) => {
     try {
         // console.log('User ID from session:', req.session.user);

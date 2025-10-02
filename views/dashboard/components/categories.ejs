@@ -1,0 +1,33 @@
+<div class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition">
+  <h3 class="text-lg font-semibold mb-4">Budgets par Catégorie</h3>
+  <ul class="space-y-3 mb-4" id="budgetList">
+    <% categories.forEach(cat=> { %>
+      <li class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+        <span><%= cat.name %> : <%= cat.current || 0 %> MAD / <%= cat.limit || 0 %> MAD</span>
+        <div class="flex gap-2">
+          <button class="updateCategory bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-sm transition"
+            data-id="<%= cat.id %>" data-name="<%= cat.name %>" data-limit="<%= cat.limit %>">Modifier</button>
+          <button class="deleteCategory bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm transition"
+            data-id="<%= cat.id %>">Supprimer</button>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+
+  <!-- Formulaire Catégorie -->
+  <form id="categoryForm" class="space-y-3 bg-gray-50 p-4 rounded-lg">
+    <input type="hidden" name="id" id="categoryId">
+    <div>
+      <label class="block text-gray-700">Nom de la Catégorie</label>
+      <input type="text" name="name" id="categoryName" placeholder="Ex: Santé"
+        class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+    </div>
+    <div>
+      <label class="block text-gray-700">Limite (MAD)</label>
+      <input type="number" name="limit" id="categoryLimit" placeholder="Ex: 2000"
+        class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+    </div>
+    <button type="submit" id="categorySubmitBtn"
+      class="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600 transition">Ajouter Catégorie</button>
+  </form>
+</div>

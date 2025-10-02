@@ -20,6 +20,7 @@ const indexRoutes = require("./routes/index");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const categoriesRoutes = require("./routes/categoriesRoutes");
+const transactionsRoutes = require("./routes/transactionRoutes");
 
 
 // ============================
@@ -95,6 +96,7 @@ app.use("/dashboard", userRoutes);
 
 // API routes
 app.use("/api/categories", categoriesRoutes);
+app.use("/api/transactions", transactionsRoutes );
 
 // Static uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
