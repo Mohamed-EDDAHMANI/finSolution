@@ -1,12 +1,15 @@
 const fs = require("fs");
-const path = require("path");
 const bcrypt = require("bcrypt");
 const { User } = require("../models");
+const { sendMail, resetPasswordTemplate } = require('../utils/sendMail');
+
+
 
 // Helper to set session messages
 const setSessionMessage = (req, type, messages) => {
   req.session.messages = req.session.messages || {};
   req.session.messages[type] = Array.isArray(messages) ? messages : [messages];
+  console.log('Set session messages:', req.session.messages);
 };
 
 // Helper to get and clear session messages
@@ -139,8 +142,7 @@ exports.forgotPassword = async (req, res) => {
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     
     try {
-      const { sendResetCode } = require("../utils/sendMail");
-      await sendResetCode(email, resetCode);
+      await sendMail(user.email, "Password Reset Code", resetPasswordTemplate(resetCode));
       
       // Store reset code in session
       req.session.resetCode = resetCode;

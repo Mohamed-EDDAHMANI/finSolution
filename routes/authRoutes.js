@@ -8,12 +8,13 @@ const { validate, isRequired, isEmail, minLength } = require("../validation-lib"
 router.get('/login', (req, res) => {
   const success_msg = req.session.messages?.success || [];
   const error_msg = req.session.messages?.error || [];
-  
+
   // Clear messages after reading
-  if (req.session.messages) {
-    delete req.session.messages.success;
-    delete req.session.messages.error;
-  }
+    if (req.session.messages && (req.session.messages.success || req.session.messages.error)) {
+      delete req.session.messages.success;
+      delete req.session.messages.error;
+    }
+
   
   res.render('auth/login', { 
     success_msg,
@@ -26,7 +27,7 @@ router.get('/register', (req, res) => {
   const error_msg = req.session.messages?.error || [];
   
   // Clear messages after reading
-  if (req.session.messages) {
+  if (req.session.messages && (req.session.messages.success || req.session.messages.error)) {
     delete req.session.messages.success;
     delete req.session.messages.error;
   }
@@ -82,7 +83,7 @@ router.post('/forgot-password',
   authController.forgotPassword
 );
 
-router.post('/reset-password', 
+router.post('/resetPassword', 
   validate({
     email: [isRequired('Email is required')],
     password: [isRequired('Password is required'), minLength(6, 'Password must be at least 6 characters')],

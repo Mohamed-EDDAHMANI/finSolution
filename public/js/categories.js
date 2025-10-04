@@ -3,7 +3,7 @@ function initCategories() {
   const categoryIdInput = document.getElementById('categoryId');
   const categoryNameInput = document.getElementById('categoryName');
   const categoryLimitInput = document.getElementById('categoryLimit');
-  const budgetList = document.getElementById('budgetList');
+  const categoryList = document.getElementById('categoryList');
   const categorySubmitBtn = document.getElementById('categorySubmitBtn');
   let flashMessages = [];
 
@@ -27,8 +27,7 @@ function initCategories() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, limit }),
-        credentials: 'include'
+        body: JSON.stringify({ name, limit })
       });
 
       const result = await res.json();
@@ -54,7 +53,7 @@ function initCategories() {
     }
   });
 
-  budgetList.addEventListener('click', async (e) => {
+  categoryList.addEventListener('click', async (e) => {
     if (e.target.classList.contains('updateCategory')) {
       categoryIdInput.value = e.target.dataset.id;
       categoryNameInput.value = e.target.dataset.name;

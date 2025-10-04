@@ -40,21 +40,20 @@ function initTransactions() {
       row.classList.add('border-b');
       row.dataset.id = result.id;
       row.innerHTML = `
-        <td class="px-4 py-2">${new Date(result.date).toLocaleDateString('fr-FR')}</td>
-        <td class="px-4 py-2">${result.categorie}</td>
-        <td class="px-4 py-2 ${result.type === 'depense' ? 'text-red-500' : 'text-green-500'}">
-          ${result.type === 'depense' ? '-' : '+'}${result.montant} MAD
+        <td class="px-4 py-2">${new Date(result.transaction.date).toLocaleDateString('fr-FR')}</td>
+        <td class="px-4 py-2">${result.transaction.categorie}</td>
+        <td class="px-4 py-2 ${result.transaction.type === 'depense' ? 'text-red-500' : 'text-green-500'}">
+          ${result.transaction.type === 'depense' ? '-' : '+'}${result.transaction.amount} MAD
         </td>
-        <td class="px-4 py-2">${result.type === 'depense' ? 'Dépense' : 'Revenu'}</td>
+        <td class="px-4 py-2">${result.transaction.type === 'depense' ? 'Dépense' : 'Revenu'}</td>
         <td class="px-4 py-2">
-          <button class="editTransaction text-blue-500 hover:underline" data-id="${result.id}">Éditer</button>
-          <button class="deleteTransaction text-red-500 hover:underline ml-2" data-id="${result.id}">Supprimer</button>
+          <button class="editTransaction text-blue-500 hover:underline" data-id="${result.transaction.id}">Éditer</button>
+          <button class="deleteTransaction text-red-500 hover:underline ml-2" data-id="${result.transaction.id}">Supprimer</button>
         </td>`;
       transactionsTable.prepend(row);
       transactionForm.reset();
 
-      console.log('Updated balance from server:', result.balance);
-      // balance.textContent = result.balance.toFixed(2);
+      balance.textContent = result.balance.toFixed(2) + ' MAD';
 
     } catch (err) {
       showFlashMessages([{ type: 'error', text: err.message }]);
@@ -88,7 +87,7 @@ function initTransactions() {
         return;
       }
 
-      balance.textContent = result.balance.toFixed(2);
+      balance.textContent = result.balance.toFixed(2) + ' MAD';
 
       showFlashMessages([{ type: 'success', text: 'Transaction supprimée avec succès' }]);
       const row = transactionsTable.querySelector(`tr[data-id='${id}']`);

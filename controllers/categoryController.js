@@ -1,5 +1,6 @@
-const e = require('connect-flash');
 const { Category } = require('../models');
+const { Op, fn, col, literal } = require("sequelize");
+const moment = require("moment");
 
 exports.createCategory = async (req, res) => {
     const { name, limit } = req.body;
@@ -78,37 +79,39 @@ exports.remove = async (req, res) => {
   }
 };
 
-// Delete
-exports.remove = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deleted = await Category.destroy({ where: { id } });
-
-    if (!deleted) {
-      return res.status(404).json({ status: "error", message: "Catégorie introuvable" });
-    }
-
-    if (req.accepts('json')) {
-      return res.json({ status: "success", message: "Catégorie supprimée" });
-    }
-
-    req.session.messages = { success: ["Catégorie supprimée avec succès"] };
-    return res.redirect('/categories');
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ status: "error", message: "Erreur serveur" });
-  }
-};
 
 exports.getCategories = async (req, res) => {
-    try {
-        // console.log('User ID from session:', req.session.user);
-        const categories = await Category.findAll({ where: { userId: req.session.user.id } });
-        // console.log('Fetched categories:', categories);
-        res.status(200).json({ categories });
-    } catch (error) {
-        return false;
-        // res.status(500).json({ message: 'Failed to fetch categories', error: error.message });
-    }
+  try {
+    const userId = req.session.user.id;
+
+    const startOfMonth = moment().startOf("month").toDate();
+    const endOfMonth = moment().endOf("month").toDate();
+
+    const categories = await Category.findAll({
+      where: { userId },
+      attributes: [
+        "id",
+        "namee",
+        "limit",
+        [fn("COALESCE", fn("SUM", col("transactions.amount")), 0), "currentTotal"],
+      ],
+      include: [
+        {
+          model: Transaction,
+          attributes: [],
+          where: {
+            date: { [Op.between]: [startOfMonth, endOfMonth] }
+          },
+          required: false,
+        }
+      ],
+      group: ["Category.id"],
+    });
+    console.log("Fetched categories with totals:", categories);
+
+    res.status(200).json({ categories });
+  } catch (error) {
+    console.error("Error fetching categories with totals:", error);
+    res.status(500).json({ message: "Failed to fetch categories", error: error.message });
+  }
 };

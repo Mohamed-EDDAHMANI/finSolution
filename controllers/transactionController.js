@@ -1,4 +1,5 @@
 const { Transaction, Category } = require('../models');
+const { checkBudgetLimit } = require("../services/transactionService");
 
 
 async function calculateBalance(req) {
@@ -69,20 +70,12 @@ exports.createTransaction = async (req, res) => {
             categoryId
         });
 
-        const balance = calculateBalance(req)
+        const balance = await calculateBalance(req);
+        if (type === "expense") {
+            await checkBudgetLimit(req.session.user, categoryId);
+        }
 
-        const transactionResponse = {
-            id: transaction.id,
-            type: transaction.type,
-            amount: transaction.amount,
-            date: transaction.date,
-            userId: transaction.userId,
-            categoryId: transaction.categoryId,
-            categorie: category.name, // <--- hna category name
-            balance: balance || 0
-        };
-
-        res.status(201).json(transactionResponse);
+        res.status(201).json({ transaction, balance: balance || 0 });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Erreur serveur" });
@@ -137,3 +130,4 @@ exports.deleteTransaction = async (req, res) => {
         res.status(500).json({ message: "Erreur serveur" });
     }
 };
+

@@ -21,6 +21,8 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const categoriesRoutes = require("./routes/categoriesRoutes");
 const transactionsRoutes = require("./routes/transactionRoutes");
+const budgetRoutes = require("./routes/budgetRoutes");
+const chartRoutes = require("./routes/chartRoutes");
 
 
 // ============================
@@ -97,6 +99,8 @@ app.use("/dashboard", userRoutes);
 // API routes
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/transactions", transactionsRoutes );
+app.use("/api/budgets", budgetRoutes );
+app.use("/api/charts", chartRoutes );
 
 // Static uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

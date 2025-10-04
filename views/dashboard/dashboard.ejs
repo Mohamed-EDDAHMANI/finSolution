@@ -51,17 +51,18 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      initServerFlashMessages({
-        success_msg: <%= JSON.stringify(success_msg || '') %>,
-        error_msg: <%= JSON.stringify(error_msg || []) %>
-    });
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  initServerFlashMessages({
+    success_msg: <%- JSON.stringify(success_msg || '') %>,
+    error_msg: <%- JSON.stringify(error_msg || []) %>
+  });
+});
   </script>
 
   <script src="/js/dashboard.js"></script>
   <script src="/js/flashMessages.js"></script>
   <script src="/js/charts.js"></script>
+  <script src="/js/budgets.js"></script>
   <script src="/js/transactions.js"></script>
   <script src="/js/categories.js"></script>
   <script src="/js/logout.js"></script>
