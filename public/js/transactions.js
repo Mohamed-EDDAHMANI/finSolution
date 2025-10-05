@@ -41,11 +41,11 @@ function initTransactions() {
       row.dataset.id = result.id;
       row.innerHTML = `
         <td class="px-4 py-2">${new Date(result.transaction.date).toLocaleDateString('fr-FR')}</td>
-        <td class="px-4 py-2">${result.transaction.categorie}</td>
-        <td class="px-4 py-2 ${result.transaction.type === 'depense' ? 'text-red-500' : 'text-green-500'}">
-          ${result.transaction.type === 'depense' ? '-' : '+'}${result.transaction.amount} MAD
+        <td class="px-4 py-2">${result.category.name}</td>
+        <td class="px-4 py-2 ${result.transaction.type === 'expense' ? 'text-red-500' : 'text-green-500'}">
+          ${result.transaction.type === 'expense' ? '-' : '+'}${result.transaction.amount} MAD
         </td>
-        <td class="px-4 py-2">${result.transaction.type === 'depense' ? 'Dépense' : 'Revenu'}</td>
+        <td class="px-4 py-2">${result.transaction.type === 'expense' ? 'Dépense' : 'Revenu'}</td>
         <td class="px-4 py-2">
           <button class="editTransaction text-blue-500 hover:underline" data-id="${result.transaction.id}">Éditer</button>
           <button class="deleteTransaction text-red-500 hover:underline ml-2" data-id="${result.transaction.id}">Supprimer</button>

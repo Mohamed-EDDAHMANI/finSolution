@@ -75,7 +75,7 @@ exports.createTransaction = async (req, res) => {
             await checkBudgetLimit(req.session.user, categoryId);
         }
 
-        res.status(201).json({ transaction, balance: balance || 0 });
+        res.status(201).json({ transaction, balance: balance || 0, category });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Erreur serveur" });

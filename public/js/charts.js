@@ -32,7 +32,7 @@ async function initCharts() {
 
     monthlyData.forEach(d => {
       const monthIndex = parseInt(d.month) - 1;
-      if (d.type === 'expense') expenses[monthIndex] = parseFloat(d.total);
+      if (d.type === 'expense') expenses[monthIndex] = -parseFloat(d.total);
       else if (d.type === 'income') revenues[monthIndex] = parseFloat(d.total);
     });
 

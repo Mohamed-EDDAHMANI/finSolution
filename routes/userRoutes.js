@@ -79,7 +79,7 @@ router.get('/', async (req, res) => {
 
 
     res.render('dashboard/dashboard', {
-      displayName: req.session.user.displayName,
+      user: req.session.user,
       categories: categories || [],
       transactions: transactions || [],
       budgets: budgets || [],

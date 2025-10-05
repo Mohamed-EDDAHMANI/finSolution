@@ -4,9 +4,7 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const cookieParser = require("cookie-parser");
 const session = require("express-session");
-const flash = require("connect-flash");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 
 // Database & Models
@@ -33,19 +31,19 @@ const PORT = process.env.PORT || 3000;
 
 
 // ============================
-// 3. SESSION & FLASH
+// 3. SESSION 
 // ============================
 const sessionStore = new SequelizeStore({ db: sequelize });
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "supersecret",
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 1000 * 60 * 60, // 1h
-      // httpOnly: true,
+      httpOnly: true,
     },
   })
 );
@@ -63,7 +61,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Cookie parser
-app.use(cookieParser());
+// app.use(cookieParser());
 
 // Simple request logger
 app.use((req, res, next) => {
@@ -125,8 +123,10 @@ app.use((req, res) => {
 
     // Ensure session table exists
     await sessionStore.sync();
+    console.log("✅ Session store synced");
 
     console.log("✅ DB connection OK");
+    startServer();
   } catch (err) {
     console.error("❌ DB connection failed, server still running:", err.message);
   }
@@ -142,4 +142,3 @@ const startServer = async () => {
   });
 };
 
-startServer();

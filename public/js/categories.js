@@ -14,7 +14,7 @@ function initCategories() {
     const id = categoryIdInput.value;
     const name = categoryNameInput.value.trim();
     const limit = Number(categoryLimitInput.value);
-
+    console.log(name)
     if (!name || isNaN(limit)) {
       showFlashMessages([{ type: 'error', text: 'Nom et limite valides requis' }]);
       return;
@@ -33,6 +33,8 @@ function initCategories() {
       const result = await res.json();
 
       if (!res.ok) {
+        flashMessages = [];
+        
         Array.isArray(result.errors) ? result.errors.forEach(err => {
           flashMessages.push({ type: 'error', text: err.message || err });
         }) : flashMessages.push({ type: 'error', text: result.message || 'Erreur' });

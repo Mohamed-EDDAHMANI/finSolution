@@ -3,28 +3,32 @@ const { Op, fn, col, literal } = require("sequelize");
 const moment = require("moment");
 
 exports.createCategory = async (req, res) => {
-    const { name, limit } = req.body;
-    console.log('Creating category:', { name, limit, userId: req.session.user.id });
+  const { name, limit } = req.body;
 
-     const existing = await Category.findOne({ where: { name } });
-        if (existing) {
-            req.session.messages = req.session.messages || {};
-            req.session.messages['error'] = ['Category name must be unique'];
-            return res.status(400).json({ message: 'Category name must be unique' });
-        }
+  // check if the category already exist
+  const existing = await Category.findOne({ where: { name, userId: req.session.user.id } });
+  console.log('Existing category check:', existing);
+  if (existing) {
+    req.session.messages = req.session.messages || {};
+    req.session.messages['error'] = ['Category name must be unique'];
+    return res.status(400).json({ message: 'Category name must be unique' });
+  }
 
-    // Here you would typically interact with your database to create the category
-    // For example:
-    try {
-        await Category.create({ name, limit, userId: req.session.user.id });
-        req.session.messages = req.session.messages || {};
-        req.session.messages['success'] = ['Category created successfully'];
-        res.status(201).json({ message: 'Category created successfully.', category: { name, limit } });
-    } catch (error) {
-        req.session.messages = req.session.messages || {};
-        req.session.messages['error'] = ['Failed to create category'];
-        res.status(500).json({ message: 'Failed to create category', error: error.message });
-    }
+  // Here you would typically interact with your database to create the category
+  // For example:
+  try {
+
+    await Category.create({ name, limit, userId: req.session.user.id });
+
+    req.session.messages = req.session.messages || {};
+    req.session.messages['success'] = ['Category created successfully'];
+    res.status(201).json({ message: 'Category created successfully.', category: { name, limit } });
+  } catch (error) {
+    console.error('Error creating category:', error);
+    req.session.messages = req.session.messages || {};
+    req.session.messages['error'] = [error.message];
+    res.status(500).json({ message: 'Failed to create category', error: error.message });
+  }
 
 }
 
