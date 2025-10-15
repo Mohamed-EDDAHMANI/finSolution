@@ -1,9 +1,36 @@
 function initBudgets() {
   const budgetForm = document.getElementById("budgetForm");
   const budgetList = document.getElementById("budgetList");
-  const submitBtn = budgetForm.querySelector("button[type=submit]");
+  const submitBtn = budgetForm?.querySelector("button[type=submit]");
 
-  let editingBudgetId = null; // state ديال mode
+  if (!budgetForm || !budgetList) return;
+
+  let editingBudgetId = null;
+
+  // Helper to reset form
+  const resetForm = () => {
+    budgetForm.reset();
+    editingBudgetId = null;
+    if (submitBtn) {
+      submitBtn.innerHTML = `
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span class="text-sm sm:text-base">Ajouter Budget</span>
+      `;
+    }
+  };
+
+  // Helper function to refresh components
+  const refreshAllComponents = async () => {
+    try {
+      if (window.initCategories) await window.initCategories();
+      if (window.initCharts) await window.initCharts();
+      console.log('✅ Components refreshed after budget change');
+    } catch (err) {
+      console.error('Error refreshing components:', err);
+    }
+  };
 
   // Handle Create/Update Budget
   budgetForm.addEventListener("submit", async (e) => {
@@ -15,89 +42,119 @@ function initBudgets() {
       categoryId: budgetForm.categoryId.value,
     };
 
+    if (!formData.month || !formData.amount || !formData.categoryId) {
+      showFlashMessages([{ type: "error", text: "Tous les champs sont requis" }]);
+      return;
+    }
+
     try {
       let res, data;
 
       if (editingBudgetId) {
-        // ---- Update mode ----
+        // Update mode
         res = await fetch(`/api/budgets/${editingBudgetId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
+          credentials: 'include'
         });
         data = await res.json();
 
         if (res.ok) {
           showFlashMessages([{ type: "success", text: "Budget modifié avec succès" }]);
           resetForm();
-          location.reload(); // أو تحدث اللائحة بلا ما reload
+          await refreshAllComponents();
+          setTimeout(() => location.reload(), 1000);
         } else {
-          showFlashMessages([{ type: "error", text: data.errors || "Erreur lors de la mise à jour" }]);
+          showFlashMessages([{ type: "error", text: data.errors || data.message || "Erreur lors de la mise à jour" }]);
         }
       } else {
-        // ---- Create mode ----
+        // Create mode
         res = await fetch("/api/budgets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
+          credentials: 'include'
         });
         data = await res.json();
 
         if (res.ok) {
           showFlashMessages([{ type: "success", text: data.message || "Budget créé avec succès" }]);
           budgetForm.reset();
-          budgetList.insertAdjacentHTML(
-            "afterbegin",
-            `
-          <li class="p-4 border border-gray-200 rounded-lg flex justify-between items-center hover:bg-gray-50 transition">
-            <div class="text-sm text-gray-700">
-              <p><span class="font-semibold">Mois :</span> ${data.month}</p>
-              <p><span class="font-semibold">Montant :</span> ${data.amount} MAD</p>
-              <p><span class="font-semibold">Catégorie :</span> ${data.Category ? data.Category.name : "N/A"}</p>
-            </div>
-            <div class="flex gap-2">
-              <button class="editBudget bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600 transition" data-id="${data.id}">Modifier</button>
-              <button class="deleteBudget bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition" data-id="${data.id}">Supprimer</button>
-            </div>
-          </li>`
-          );
+          await refreshAllComponents();
+          setTimeout(() => location.reload(), 1000);
         } else {
-          showFlashMessages([{ type: "error", text: data.errors || "Erreur lors de la création du budget" }]);
+          showFlashMessages([{ type: "error", text: data.errors || data.message || "Erreur lors de la création du budget" }]);
         }
       }
     } catch (err) {
       console.error(err);
+      showFlashMessages([{ type: "error", text: "Erreur réseau: " + err.message }]);
     }
   });
 
-  // Delete Budget
+  // Event delegation for Edit and Delete
   budgetList.addEventListener("click", async (e) => {
-    if (e.target.classList.contains("deleteBudget")) {
-      const id = e.target.dataset.id;
+    const editBtn = e.target.closest(".editBudget");
+    const deleteBtn = e.target.closest(".deleteBudget");
+
+    // Delete Budget
+    if (deleteBtn) {
+      const id = deleteBtn.dataset.id;
+      
+      if (!confirm("Voulez-vous vraiment supprimer ce budget ?")) return;
+
       try {
-        const res = await fetch(`/api/budgets/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/budgets/${id}`, { 
+          method: "DELETE",
+          credentials: 'include'
+        });
         const data = await res.json();
+        
         if (res.ok) {
-          setTimeout(() => window.location.reload(), 200);
+          showFlashMessages([{ type: "success", text: "Budget supprimé avec succès" }]);
+          await refreshAllComponents();
+          setTimeout(() => location.reload(), 1000);
         } else {
-          showFlashMessages([{ type: "error", text: data.errors || "Erreur lors de la suppression" }]);
+          showFlashMessages([{ type: "error", text: data.errors || data.message || "Erreur lors de la suppression" }]);
         }
       } catch (err) {
         console.error(err);
+        showFlashMessages([{ type: "error", text: "Erreur réseau: " + err.message }]);
       }
     }
-  });
 
-  // Edit Budget
-  budgetList.addEventListener("click", async (e) => {
-    if (e.target.classList.contains("editBudget")) {
-      const id = e.target.dataset.id;
+    // Edit Budget
+    if (editBtn) {
+      const id = editBtn.dataset.id;
+      const month = editBtn.dataset.month;
+      const amount = editBtn.dataset.amount;
+      const categoryId = editBtn.dataset.categoryid;
+
       editingBudgetId = id;
 
-      // نعمر الفورم بالبيانات ديال li
-      const li = e.target.closest("li");
-      const month = li.querySelector("p:nth-child(1)").innerText.replace("Mois :", "").trim();
-      const amount = li.querySelector("p:nth-child(2)").innerText.replace("Montant :", "").replace("MAD", "").trim();
+      // Fill form with data
+      budgetForm.month.value = month;
+      budgetForm.amount.value = amount;
+      budgetForm.categoryId.value = categoryId;
+
+      // Update button text
+      if (submitBtn) {
+        submitBtn.innerHTML = `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+          <span class="text-sm sm:text-base">Modifier Budget</span>
+        `;
+      }
+
+      // Scroll to form
+      budgetForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
+window.initBudgets = initBudgets;
       const category = li.querySelector("p:nth-child(3)").innerText.replace("Catégorie :", "").trim();
 
       budgetForm.month.value = month;

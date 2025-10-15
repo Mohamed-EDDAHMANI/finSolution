@@ -60,25 +60,15 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Cookie parser
-// app.use(cookieParser());
-
-// Simple request logger
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on("finish", () => {
-    const ms = Date.now() - start;
-    console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} in ${ms}ms`);
-  });
-  next();
-});
+// EJS setup
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 // Auth middleware applied globally
 app.use(authMiddleware.isAuth);
 
-// EJS setup
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+// Attach user to all views
+app.use(authMiddleware.attachUser);
 
 
 // ============================

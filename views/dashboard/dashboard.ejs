@@ -3,62 +3,113 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Utilisateur</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - FinSolution</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+  </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 min-h-screen">
 <!-- Navbar -->
-<nav class="bg-white shadow-lg p-4 flex justify-between items-center">
-  <div class="text-xl font-bold">FinSolution Finance</div>
+<nav class="bg-white/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-gray-200">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+    <div class="flex justify-between items-center">
+      <!-- Logo -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 gradient-bg rounded-lg flex items-center justify-center">
+          <i class="fas fa-wallet text-white text-base sm:text-xl"></i>
+        </div>
+        <span class="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FinSolution</span>
+      </div>
 
-  <div class="flex items-center gap-4">
-    <% if (user) { %>
-      <span>Bienvenue, <%= user.displayName || 'Utilisateur' %>!</span>
+      <!-- User Info & Logout -->
+      <div class="flex items-center gap-2 sm:gap-4 lg:gap-6">
+        <% if (user) { %>
+          <!-- User Name (hidden on mobile) -->
+          <div class="hidden lg:flex items-center gap-2 bg-gray-100 px-3 sm:px-4 py-2 rounded-full">
+            <i class="fas fa-user-circle text-indigo-600"></i>
+            <span class="font-medium text-gray-700 text-sm"><%= user.displayName || 'Utilisateur' %></span>
+          </div>
+          
+          <!-- User Avatar -->
+          <img 
+            src="<%= user.picture || '/uploads/user.jpg' %>" 
+            alt="Profile"
+            class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full border-2 border-indigo-500 object-cover shadow-lg ring-2 ring-indigo-100"
+          />
+        <% } else { %>
+          <img 
+            src="/images/default-avatar.png" 
+            alt="Guest"
+            class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full border-2 border-gray-300 object-cover shadow-lg"
+          />
+        <% } %>
 
-      <!-- Profile Picture -->
-      <img 
-        src="<%= user.picture || '/uploads/user.jpg' %>" 
-        alt="Profile"
-        class="w-10 h-10 rounded-full border border-gray-300 object-cover shadow-sm"
-      />
-    <% } else { %>
-      <p>Bienvenue, Guest!</p>
-      <img 
-        src="/images/default-avatar.png" 
-        alt="Guest"
-        class="w-10 h-10 rounded-full border border-gray-300 object-cover shadow-sm"
-      />
-    <% } %>
-
-    <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
-      Déconnexion
-    </button>
+        <!-- Logout Button -->
+        <button id="logoutBtn" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 sm:px-4 lg:px-5 py-2 sm:py-2.5 rounded-full hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+          <i class="fas fa-sign-out-alt text-sm sm:text-base"></i>
+          <span class="hidden sm:inline text-sm lg:text-base">Déconnexion</span>
+        </button>
+      </div>
+    </div>
   </div>
 </nav>
 
 
-  <div class="container mx-auto mt-6 p-4">
+  <div class="container mx-auto mt-8 px-6 pb-12">
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
 
     <!-- Solde actuel -->
-    <div class="bg-white shadow rounded-lg p-6 mb-6 hover:shadow-lg transition">
-      <h2 class="text-gray-500 text-sm">Solde Actuel</h2>
-      <p class=" text-3xl font-bold text-green-500" id="balance">
-        <%= (typeof balance !=='undefined' && balance !==null) ? balance.toFixed(2) : "0.00" %> MAD
-      </p>
+    <div class="gradient-bg rounded-2xl p-6 sm:p-8 lg:p-10 mb-6 lg:mb-8 shadow-2xl card-hover text-white relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full -mr-24 sm:-mr-32 -mt-24 sm:-mt-32"></div>
+      <div class="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/10 rounded-full -ml-16 sm:-ml-24 -mb-16 sm:-mb-24"></div>
+      <div class="relative z-10">
+        <div class="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+          <i class="fas fa-coins text-xl sm:text-2xl lg:text-3xl"></i>
+          <h2 class="text-sm sm:text-base lg:text-lg font-medium opacity-90">Solde Actuel</h2>
+        </div>
+        <p class="text-3xl sm:text-4xl lg:text-5xl font-bold" id="balance">
+          <%= (typeof balance !=='undefined' && balance !==null) ? balance.toFixed(2) : "0.00" %> 
+          <span class="text-lg sm:text-xl lg:text-2xl font-normal">MAD</span>
+        </p>
+      </div>
     </div>
 
-    <div class="grid md:grid-cols-3 gap-6">
+    <!-- Transactions Section (3 columns on desktop, stacked on mobile) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
       <%- include("components/transactions", { categories, transactions }) %>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-6 mt-6">
+    <!-- Categories & Budgets Section (2 columns on desktop, stacked on mobile) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
       <%- include("components/categories", { categories }) %>
-        <%- include("components/budgets") %>
+      <%- include("components/budgets") %>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-6 mt-6">
+    <!-- Charts Section (2 columns on desktop, stacked on mobile) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       <%- include("components/charts") %>
     </div>
 
